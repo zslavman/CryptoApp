@@ -12,6 +12,8 @@
 		CE4844C62217117800A37A53 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE4844C42217117800A37A53 /* Main.storyboard */; };
 		CE4844C82217117900A37A53 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE4844C72217117900A37A53 /* Assets.xcassets */; };
 		CE4844CB2217117900A37A53 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE4844C92217117900A37A53 /* LaunchScreen.storyboard */; };
+		CE4844D42217140C00A37A53 /* RSAManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4844D22217140C00A37A53 /* RSAManager.swift */; };
+		CE4844D52217140C00A37A53 /* RSAUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4844D32217140C00A37A53 /* RSAUtils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,8 @@
 		CE4844C72217117900A37A53 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CE4844CA2217117900A37A53 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CE4844CC2217117900A37A53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CE4844D22217140C00A37A53 /* RSAManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RSAManager.swift; sourceTree = "<group>"; };
+		CE4844D32217140C00A37A53 /* RSAUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RSAUtils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,8 +58,10 @@
 		CE4844BF2217117800A37A53 /* CryptoApp */ = {
 			isa = PBXGroup;
 			children = (
-				CE4844C02217117800A37A53 /* AppDelegate.swift */,
 				CE4844C22217117800A37A53 /* ViewController.swift */,
+				CE4844D22217140C00A37A53 /* RSAManager.swift */,
+				CE4844D32217140C00A37A53 /* RSAUtils.swift */,
+				CE4844C02217117800A37A53 /* AppDelegate.swift */,
 				CE4844C42217117800A37A53 /* Main.storyboard */,
 				CE4844C72217117900A37A53 /* Assets.xcassets */,
 				CE4844C92217117900A37A53 /* LaunchScreen.storyboard */,
@@ -135,7 +141,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE4844D52217140C00A37A53 /* RSAUtils.swift in Sources */,
 				CE4844C32217117800A37A53 /* ViewController.swift in Sources */,
+				CE4844D42217140C00A37A53 /* RSAManager.swift in Sources */,
 				CE4844C12217117800A37A53 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
