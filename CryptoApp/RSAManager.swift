@@ -117,6 +117,22 @@ class RSAManager {
 		else { return nil }
 	}
 	
+	public static func getPublicSecKey(withTag: String) -> SecKey? {
+		let parameters:[String : Any]  = [
+			String(kSecClass)				: kSecClassKey,
+			String(kSecAttrKeyType)			: kSecAttrKeyTypeRSA,
+			String(kSecAttrApplicationTag)	: withTag,
+			String(kSecAttrKeyClass)		: kSecAttrKeyClassPublic,
+			String(kSecReturnRef)			: true
+		]
+		var data: AnyObject?
+		let status = SecItemCopyMatching(parameters as CFDictionary, &data)
+		if status == errSecSuccess {
+			return data! as! SecKey
+		}
+		else { return nil }
+	}
+	
 	
 	public static func getPrivateKeyData(withTag: String) -> Data? {
 		let parameters:[String : Any] = [

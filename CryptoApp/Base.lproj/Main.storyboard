@@ -28,16 +28,6 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="y9p-mO-Rp7">
-                                <rect key="frame" x="37" y="455" width="301" height="128"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="301" id="QE9-0I-qlE"/>
-                                    <constraint firstAttribute="height" constant="128" id="b1d-lG-eAo"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9t6-W7-aug">
                                 <rect key="frame" x="37" y="309.5" width="98" height="48"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -49,6 +39,9 @@
                                 <state key="normal" title="Encrypt">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
+                                <connections>
+                                    <action selector="onEncryptClickWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="lHF-G4-1Mv"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PnJ-eU-4mx">
                                 <rect key="frame" x="240" y="309.5" width="98" height="48"/>
@@ -61,14 +54,27 @@
                                 <state key="normal" title="Decrypt">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
+                                <connections>
+                                    <action selector="onDecryptClickWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="T5n-TV-5YN"/>
+                                </connections>
                             </button>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="y9p-mO-Rp7">
+                                <rect key="frame" x="37" y="371" width="301" height="261"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="301" id="QE9-0I-qlE"/>
+                                    <constraint firstAttribute="height" constant="261" id="b1d-lG-eAo"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
                         </subviews>
                         <color key="backgroundColor" red="0.46131438019999998" green="0.83811396360000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="PnJ-eU-4mx" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="31T-Qh-Esh"/>
                             <constraint firstItem="xcR-Bv-gL2" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="AiY-QW-ZtM"/>
                             <constraint firstItem="y9p-mO-Rp7" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QKU-YA-QG1"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="y9p-mO-Rp7" secondAttribute="bottom" constant="84" id="SWG-Ss-urO"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="y9p-mO-Rp7" secondAttribute="bottom" constant="35" id="SWG-Ss-urO"/>
                             <constraint firstItem="9t6-W7-aug" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="Zk8-LM-f2X"/>
                             <constraint firstItem="PnJ-eU-4mx" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="9t6-W7-aug" secondAttribute="trailing" constant="8" symbolic="YES" id="dbB-MU-Jv0"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="PnJ-eU-4mx" secondAttribute="trailing" constant="37" id="ddu-fP-HVa"/>

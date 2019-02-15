@@ -16,7 +16,7 @@
 import Foundation
 import Security
 
-public class RSAUtils {
+public class UtilsRSA {
 	
 	private static let PADDING_FOR_DECRYPT = SecPadding()
 	
