@@ -4,8 +4,8 @@
 //
 //  Created by User on 14/02/19.
 //  https://lapo.it/asn1js/#
-// https://github.com/cossacklabs/themis
-// https://www.linkedin.com/pulse/ios-10-how-use-secure-enclave-touch-id-protect-your-keys-satyam-tyagi/
+//  https://github.com/cossacklabs/themis
+//  https://www.linkedin.com/pulse/ios-10-how-use-secure-enclave-touch-id-protect-your-keys-satyam-tyagi/
 
 import Foundation
 
@@ -27,21 +27,30 @@ enum AccessIdentif {
 
 class RSAManager {
 	
-	private static var randKey: String {
-		let generated = UUID().uuidString
-		return generated
+	private static var privSecKey: SecKey? {
+		return getSecKeyFromKeychain(withTag: .accountKey, access: .privateA)
 	}
-	private static let padding = SecPadding.PKCS1
+	/*
+	* RSA encryption or decryption, data is padded using OAEP padding scheme internally using SHA256. Input data must be at most
+	* "key block size - 66" bytes long and returned block has always the same size as block size, as returned
+	* by SecKeyGetBlockSize().  Use kSecKeyAlgorithmRSAEncryptionOAEPSHA256AESGCM to be able to encrypt and decrypt arbitrary long data
+	*/
+	// private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1 		// works lower 224 bytes only
+	// private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1AESGCM // GOOG for all sizes
+	private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA256AESGCM	// GOOD for all sizes
+	
 	
 	//MARK:- Key-pair Generation methods
 	
 	// most proper native key-pair creation with save into persistent store
 	@discardableResult
 	public static func generatePairRSA(withTag: KeyIdentifier) -> (Data, Data)? {
+		deleteSecureKeyPair(withTag: withTag, nil)
+		
 		let publicKeyAttr: [NSObject: Any] = [
 			kSecAttrIsPermanent		: true, // store in keychain
 			kSecAttrApplicationTag	: withTag.rawValue.data(using: String.Encoding.utf8)!,
-			kSecClass				: kSecClassKey,		// ?
+			kSecClass				: kSecClassKey,
 			kSecReturnData			: true
 		]
 		let privateKeyAttr: [NSObject: Any] = [
@@ -55,7 +64,7 @@ class RSAManager {
 			kSecAttrKeySizeInBits 	: 2048 as NSObject,
 			kSecPublicKeyAttrs		: publicKeyAttr,
 			kSecPrivateKeyAttrs		: privateKeyAttr,
-			kSecAttrCanDecrypt		: true
+//			kSecAttrCanDecrypt		: true
 		]
 		var pubSecKey: SecKey?
 		var privSecKey: SecKey?
@@ -75,28 +84,36 @@ class RSAManager {
 			print("Error in: \(statusPublicKey) or \(statusPrivateKey)")
 			return nil
 		}
-		let some = (publicKey as! Data).base64EncodedString()
-		RSAManager.smartPrint(string: some, identifier: .publicDescr)
+		let pub = (publicKey as! Data).base64EncodedString()
+		let priv = (privateKey as! Data).base64EncodedString()
+		RSAManager.smartPrint(string: pub, identifier: .publicDescr)
+		RSAManager.smartPrint(string: priv, identifier: .privateDescr)
 		
 		return (publicKey as! Data, privateKey as! Data)
 	}
 	
 	
 	// native random key-pair creation with save into persistent store
-	public static func generateRandomPairRSA(withTag: String) {
+	public static func generateRandomPairRSA(withTag: KeyIdentifier) {
+		deleteSecureKeyPair(withTag: withTag, nil)
+		
 		let attributes: [NSObject: Any] = [
 			kSecAttrKeyType			: kSecAttrKeyTypeRSA,
 			kSecAttrKeySizeInBits	: 2048,
 			kSecPrivateKeyAttrs 	: [
 				kSecAttrIsPermanent 	: true,
-				kSecAttrApplicationTag	: withTag.data(using: .utf8)!
+				kSecAttrApplicationTag	: withTag.rawValue.data(using: String.Encoding.utf8)!
 			]
 		]
 		var error: Unmanaged<CFError>?
-		if let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) {
+		if let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) { // 1193 bytes
 			// Gets the public key associated with the given private key.
-			let publicKey = SecKeyCopyPublicKey(privateKey)!
+			let publicKey = SecKeyCopyPublicKey(privateKey)! //270 bytes
 			var error: Unmanaged<CFError>?
+			// save to keychain
+			addSecKeyToKeychain(secKey: privateKey, access: .privateA, tagName: withTag)
+			addSecKeyToKeychain(secKey: publicKey, access: .publicA, tagName: withTag)
+			// print
 			let data = SecKeyCopyExternalRepresentation(publicKey, &error)! as Data
 			RSAManager.smartPrint(string: data.base64EncodedString(), identifier: .publicDescr)
 		}
@@ -111,220 +128,69 @@ class RSAManager {
 	
 	//MARK:- Encrypt
 	
-	public static func encryptSimple(str: String, rsaKeyRef: SecKey) -> Data? {
-		guard let messageData = str.data(using: String.Encoding.utf8) else {
-			print("Bad message to encrypt")
-			return nil
-		}
-		guard let pubKey = getSecKeyFromKeychain(withTag: .accountKey, access: .publicA) else { return nil }
-		guard let encryptData = SecKeyCreateEncryptedData(pubKey,
-														  SecKeyAlgorithm.rsaEncryptionPKCS1,
-														  messageData as CFData,
+	public static func encryptWithSecKey(data: Data, rsaPublicKeyRef: SecKey) -> Data? {
+		guard let encrData = SecKeyCreateEncryptedData(rsaPublicKeyRef,
+														  secKeyAlgorithm,
+														  data as CFData,
 														  nil) else {
 			print("Error encrypting")
 			return nil
 		}
-		return encryptData as Data
+		return encrData as Data
 	}
 	
 	
-
-	/// Returns the data in encrypted form
-	///
-	/// - Parameters:
-	///   - data: the data to be encrypted
-	///   - rsaKeyRef: the RSA key
-	public static func encryptWithRSAKey(data: Data, rsaKeyRef: SecKey) -> Data? {
-		let blockSize = SecKeyGetBlockSize(rsaKeyRef)
-		let dataSize = data.count / MemoryLayout<UInt8>.size
-		let maxChunkSize = (padding == SecPadding.OAEP) ? (blockSize - 42) : (blockSize - 11)
-		
-		var dataAsArray = [UInt8](repeating: 0, count: dataSize)
-		(data as NSData).getBytes(&dataAsArray, length: dataSize)
-		
-		var encryptedData = [UInt8](repeating: 0, count: 0)
-		var idx = 0
-		while (idx < dataAsArray.count ) {
-			var idxEnd = idx + maxChunkSize
-			if ( idxEnd > dataAsArray.count ) {
-				idxEnd = dataAsArray.count
-			}
-			var chunkData = [UInt8](repeating: 0, count: maxChunkSize)
-			for i in idx..<idxEnd {
-				chunkData[i-idx] = dataAsArray[i]
-			}
-			var encryptedDataBuffer = [UInt8](repeating: 0, count: blockSize)
-			var encryptedDataLength = blockSize
-			
-			let status = SecKeyEncrypt(rsaKeyRef, padding, chunkData, idxEnd - idx, &encryptedDataBuffer, &encryptedDataLength)
-			if status != noErr {
-				print("Error while encrypting, status:", status)
-				return nil
-			}
-			encryptedData += encryptedDataBuffer
-			idx += maxChunkSize
-		}
-		return Data(bytes: UnsafePointer<UInt8>(encryptedData), count: encryptedData.count)
-	}
-	
-	
-	public static func encryptWithRSAKey(data: Data, rsaKeyData: Data) -> Data? {
-		guard let pubSecKey = convertPublicKeyData(pubKey: rsaKeyData) else {
+	public static func encryptWithSecKey(str: String, rsaPublicKeyRef: SecKey) -> Data? {
+		guard let messageData = str.data(using: String.Encoding.utf8) else {
+			print("Bad text to encrypt")
 			return nil
 		}
-		return encryptWithRSAKey(data: data, rsaKeyRef: pubSecKey)
+		return encryptWithSecKey(data: messageData, rsaPublicKeyRef: rsaPublicKeyRef)
 	}
 	
 	
-	public static func encryptWithRSAKey(string: String, rsaKeyData: Data) -> Data? {
-		guard let pubSecKey = convertPublicKeyData(pubKey: rsaKeyData) else {
+	public static func encryptWithDataKey(data: Data, rsaPublicKeyData: Data) -> Data? {
+		guard let pubSecKey = convertPublicKeyData(pubKey: rsaPublicKeyData) else {
 			return nil
 		}
-		guard let dataForEncrypt = string.data(using: String.Encoding.utf8) else {
-			print("Error convertation String -> Data!")
-			return nil
-		}
-		return encryptWithRSAKey(data: dataForEncrypt, rsaKeyRef: pubSecKey)
+		return encryptWithSecKey(data: data, rsaPublicKeyRef: pubSecKey)
 	}
+	
+	
+	
+	
+	
 	
 	/*----------------------------------------------------------------------*/
 	
 	
 	//MARK:- Decrypt
-
-	/// Decrypts data with a RSA key.
-	///
-	/// - Parameters:
-	///   - encryptedData: the data wich will be decrypted
-	///   - rsaKeyRef: the RSA key
-	/// - Returns: the decrypted data
-	public static func decrypt(encryptedData: Data) -> Data? {
-		guard let privSecKey = getSecKeyFromKeychain(withTag: .accountKey, access: .privateA) else {
+	
+	
+	public static func decrypt(data: Data) -> Data? {
+		guard let privSecKey = privSecKey else { return nil }
+		guard let decryptData = SecKeyCreateDecryptedData(privSecKey,
+														  secKeyAlgorithm,
+														  data as CFData,
+														  nil) else {
+			print("Error decrypting. Bad key for decryption!")
 			return nil
 		}
-		let blockSize = SecKeyGetBlockSize(privSecKey)
-		let dataSize = encryptedData.count / MemoryLayout<UInt8>.size
-		var encryptedDataAsArray = [UInt8](repeating: 0, count: dataSize)
-		(encryptedData as NSData).getBytes(&encryptedDataAsArray, length: dataSize)
-		
-		var decryptedData = [UInt8](repeating: 0, count: 0)
-		var idx = 0
-		while idx < encryptedDataAsArray.count {
-			var idxEnd = idx + blockSize
-			if idxEnd > encryptedDataAsArray.count {
-				idxEnd = encryptedDataAsArray.count
-			}
-			// create array of bytes
-			var chunkData = [UInt8](repeating: 0, count: blockSize)
-			for i in idx..<idxEnd {
-				chunkData[i - idx] = encryptedDataAsArray[i]
-			}
-			var decryptedDataBuffer = [UInt8](repeating: 0, count: blockSize)
-			var decryptedDataLength = blockSize
-			
-			let status = SecKeyDecrypt(privSecKey, padding, chunkData, idxEnd - idx, &decryptedDataBuffer, &decryptedDataLength)
-			if status != noErr {
-				print("Error, SecKeyDecrypt failed with status \(status)!")
-				return nil
-			}
-			let finalData = removePadding(decryptedDataBuffer)
-			decryptedData += finalData
-			
-			idx += blockSize
-		}
-		return Data(bytes: UnsafePointer<UInt8>(decryptedData), count: decryptedData.count)
+		print("Successfully decrypt data :-)")
+		return decryptData as Data
 	}
 	
 	
-	public static func rsa_decrypt(inputData: Data) -> Data? {
-		guard let privSecKey = getSecKeyFromKeychain(withTag: .accountKey, access: .privateA) else {
+	public static func decrypt(str: String) -> Data? {
+		guard let messageData = Data(base64Encoded: str) else {
+			print("Bad message to decrypt")
 			return nil
 		}
-		guard inputData.count == SecKeyGetBlockSize(privSecKey) else {
-			return nil
-		}
-		let key_size = SecKeyGetBlockSize(privSecKey)
-		var decrypt_bytes = [UInt8](repeating: 0, count: key_size)
-		var output_size: Int = key_size
-		
-		let status = SecKeyDecrypt(privSecKey, SecPadding.OAEP, arrayOfBytes(inputData), inputData.count, &decrypt_bytes, &output_size)
-		if status == errSecSuccess {
-			return Data(bytes: UnsafePointer<UInt8>(decrypt_bytes), count: output_size)
-		}
-		print("Error, SecKeyDecrypt failed with status \(status)!")
-		return nil
-	}
-	private static func arrayOfBytes(_ data: Data) -> [UInt8] {
-		let count = data.count / MemoryLayout<UInt8>.size
-		var bytesArray = [UInt8](repeating: 0, count: count)
-		(data as NSData).getBytes(&bytesArray, length:count * MemoryLayout<UInt8>.size)
-		return bytesArray
+		return decrypt(data: messageData)
 	}
 	
 	
-	public static func decrypt(encrpted: Data) -> String? {
-		guard let privSecKey = getSecKeyFromKeychain(withTag: .accountKey, access: .privateA) else {
-			return nil
-		}
-		var plaintextBufferSize = Int(SecKeyGetBlockSize(privSecKey))
-		var plaintextBuffer = [UInt8](repeating: 0, count: Int(plaintextBufferSize))
-		
-		let status = SecKeyDecrypt(privSecKey, padding, arrayOfBytes(encrpted), plaintextBufferSize, &plaintextBuffer, &plaintextBufferSize)
-		
-		if (status != errSecSuccess) {
-			print("Failed Decrypt")
-			return nil
-		}
-		return NSString(bytes: &plaintextBuffer, length: plaintextBufferSize, encoding: String.Encoding.utf8.rawValue)! as String
-	}
 	
-	
-	public static func decrypt(source: Data) -> String? {
-		guard let privSecKey = getSecKeyFromKeychain(withTag: .accountKey, access: .privateA) else {
-			return nil
-		}
-		if let data = SecKeyCreateDecryptedData(privSecKey,
-												SecKeyAlgorithm.rsaEncryptionOAEPSHA1,
-												source as CFData,
-												nil) {
-			return (data as Data).base64EncodedString()
-		}
-		print("Failed Decrypt")
-		return nil
-	}
-	
-	
-	public static func decryptMessage(_ encryptedData: Data) -> String? {
-		guard let privateKeyRef = RSAManager.getSecKeyFromKeychain(withTag: .accountKey, access: .privateA) else { return nil }
-		// prepare input input plain text
-		let encryptedText = (encryptedData as NSData).bytes.bindMemory(to: UInt8.self, capacity: encryptedData.count)
-		let encryptedTextLen = encryptedData.count
-		
-		// prepare output data buffer
-		var plainData = Data(count: 1024)
-		let plainText = plainData.withUnsafeMutableBytes({
-			(bytes: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
-			return bytes
-		})
-		var plainTextLen = plainData.count
-		
-		let status = SecKeyDecrypt(privateKeyRef, padding, encryptedText, encryptedTextLen, plainText, &plainTextLen)
-		if status == errSecSuccess {
-			// adjust NSData length
-			plainData.count = plainTextLen
-			// Generate and return result string
-			if let string = NSString(data: plainData as Data, encoding: String.Encoding.utf8.rawValue) as String? {
-				return string
-			}
-			else {
-				print("Error, can't create String from Data!")
-				return nil
-			}
-		}
-		print("Error, SecKeyDecrypt failed with status \(status)")
-		plainText.deinitialize(count: 1)
-		return nil
-	}
 	
 	/*----------------------------------------------------------------------*/
 	
@@ -344,93 +210,8 @@ class RSAManager {
 		if status == errSecSuccess {
 			return ref as! SecKey?
 		}
-		print("Error \(access)) key not found!")
+		print("Error: \(access) key not found!")
 		return nil
-	}
-	
-	
-	// Add private RSA-key into keychain storage
-	@discardableResult
-	public static func addPrivateKeyRSAtoKeychain(privkey: Data, tagName: KeyIdentifier) throws -> SecKey? {
-		RSAManager.deleteSecureKeyPair(withTag: tagName, nil)
-		
-		let privkeyData = try stripPrivateKeyHeader(privkey)
-		if privkeyData == nil {
-			return nil
-		}
-		let queryFilter: [NSObject : Any] = [
-			kSecClass            	: kSecClassKey,
-			kSecAttrKeyType      	: kSecAttrKeyTypeRSA,
-			kSecAttrApplicationTag 	: tagName,
-			//kSecAttrAccessible    : kSecAttrAccessibleWhenUnlocked,
-			kSecValueData         	: privkeyData!,
-			kSecAttrKeyClass      	: kSecAttrKeyClassPrivate,
-			kSecReturnPersistentRef	: true
-		]
-		let result = SecItemAdd(queryFilter as CFDictionary, nil)
-		if (result != noErr && result != errSecDuplicateItem) {
-			print("Error, can't add key to keychain, status \(result)")
-			return nil
-		}
-		return RSAManager.getSecKeyFromKeychain(withTag: tagName, access: .privateA)
-	}
-
-	
-	
-	/*
-	* Verifies that the supplied key is in fact a PEM RSA private key, and strips its header.
-	* If the supplied key is PKCS#8, its ASN.1 header should be stripped. Otherwise (PKCS#1), the whole key data is left intact.
-	*/
-	/// Returns the private RSA key with stripped header
-	///
-	/// - Parameter privkey: RSA private key (PKCS#1 or PKCS#8)
-	/// - Throws: Error if the input key is not a valid RSA PKCS#8 private key
-	private static func stripPrivateKeyHeader(_ privkey: Data) throws -> Data? {
-		if privkey.count == 0 {
-			return nil
-		}
-		var keyAsArray = [UInt8](repeating: 0, count: privkey.count / MemoryLayout<UInt8>.size)
-		(privkey as NSData).getBytes(&keyAsArray, length: privkey.count)
-		
-		//PKCS#8: magic byte at offset 22, check if it's actually ASN.1
-		var idx = 22
-		if keyAsArray[idx] != 0x04 {
-			return privkey
-		}
-		idx += 1
-		
-		//now we need to find out how long the key is, so we can extract the correct hunk
-		//of bytes from the buffer.
-		var len = Int(keyAsArray[idx])
-		idx += 1
-		let det = len & 0x80 //check if the high bit set
-		if (det == 0) {
-			//no? then the length of the key is a number that fits in one byte, (< 128)
-			len = len & 0x7f
-		}
-		else {
-			//otherwise, the length of the key is a number that doesn't fit in one byte (> 127)
-			var byteCount = Int(len & 0x7f)
-			if (byteCount + idx > privkey.count) {
-				return nil
-			}
-			//so we need to snip off byteCount bytes from the front, and reverse their order
-			var accum: UInt = 0
-			var idx2 = idx
-			idx += byteCount
-			while (byteCount > 0) {
-				//after each byte, we shove it over, accumulating the value into accum
-				accum = (accum << 8) + UInt(keyAsArray[idx2])
-				idx2 += 1
-				byteCount -= 1
-			}
-			// now we have read all the bytes of the key length, and converted them to a number,
-			// which is the number of bytes in the actual key.  we use this below to extract the
-			// key bytes and operate on them
-			len = Int(accum)
-		}
-		return privkey.subdata(in: idx..<idx + len)
-		//return privkey.subdata(in: NSMakeRange(idx, len).toRange()!)
 	}
 	
 	
@@ -535,33 +316,6 @@ class RSAManager {
 	}
 	
 	
-	/// Remove padding on decrypting
-	public static func removePadding(_ data: [UInt8]) -> [UInt8] {
-		var idxFirstZero = -1
-		var idxNextZero = data.count
-		for i in 0..<data.count {
-			if ( data[i] == 0 ) {
-				if ( idxFirstZero < 0 ) {
-					idxFirstZero = i
-				}
-				else {
-					idxNextZero = i
-					break
-				}
-			}
-		}
-		if idxNextZero - idxFirstZero - 1 == 0 {
-			idxNextZero = idxFirstZero
-			idxFirstZero = -1
-		}
-		var newData = [UInt8](repeating: 0, count: idxNextZero - idxFirstZero - 1)
-		for i in idxFirstZero + 1..<idxNextZero {
-			newData[i - idxFirstZero - 1] = data[i]
-		}
-		return newData
-	}
-	
-	
 	public static func isKeyPairExists(withTag: KeyIdentifier) -> Bool {
 		return RSAManager.getSecKeyFromKeychain(withTag: withTag, access: .privateA) != nil
 	}
@@ -573,12 +327,12 @@ class RSAManager {
 			kSecClass				: kSecClassKey,
 			kSecAttrApplicationTag 	: withTag.rawValue,
 		]
-		DispatchQueue.global(qos: .default).async {
+		//DispatchQueue.global(qos: .default).async {
 			let status = SecItemDelete(deleteQuery as CFDictionary) // delete private key
-			DispatchQueue.main.async {
+			//DispatchQueue.main.async {
 				completion?(status == errSecSuccess)
-			}
-		}
+			//}
+		//}
 	}
 	
 	
@@ -588,7 +342,313 @@ class RSAManager {
 		print("\(prefix)\n\(string)\(suffix)")
 	}
 	
+	
+	// Add RSA-key into keychain storage
+	@discardableResult
+	private static func addSecKeyToKeychain(secKey: SecKey, access: AccessIdentif, tagName: KeyIdentifier) -> SecKey? {
+		let queryFilter: [NSObject : Any] = [
+			kSecClass            	: kSecClassKey,
+			kSecAttrKeyType      	: kSecAttrKeyTypeRSA,
+			kSecAttrApplicationTag 	: tagName.rawValue.data(using: String.Encoding.utf8)!,
+			//kSecAttrAccessible    : kSecAttrAccessibleWhenUnlocked,
+			kSecValueRef         	: secKey,
+			kSecAttrKeyClass      	: access == .privateA ? kSecAttrKeyClassPrivate : kSecAttrKeyClassPublic,
+			kSecReturnPersistentRef	: true
+		]
+		let result = SecItemAdd(queryFilter as CFDictionary, nil)
+		if (result != noErr && result != errSecDuplicateItem) {
+			print("Error, can't add key to keychain, status \(result)")
+			return nil
+		}
+		return RSAManager.getSecKeyFromKeychain(withTag: tagName, access: .privateA)
+	}
+	
+	
+	
+	/*
+	* Verifies that the supplied key is in fact a PEM RSA private key, and strips its header.
+	* If the supplied key is PKCS#8, its ASN.1 header should be stripped. Otherwise (PKCS#1), the whole key data is left intact.
+	*/
+	/// Returns the private RSA key with stripped header
+	///
+	/// - Parameter privkey: RSA private key (PKCS#1 or PKCS#8)
+	/// - Throws: Error if the input key is not a valid RSA PKCS#8 private key
+	private static func stripPrivateKeyHeader(_ privkey: Data) -> Data? {
+		if privkey.count == 0 {
+			return nil
+		}
+		var keyAsArray = [UInt8](repeating: 0, count: privkey.count / MemoryLayout<UInt8>.size)
+		(privkey as NSData).getBytes(&keyAsArray, length: privkey.count)
+		
+		//PKCS#8: magic byte at offset 22, check if it's actually ASN.1
+		var idx = 22
+		if keyAsArray[idx] != 0x04 {
+			return privkey
+		}
+		idx += 1
+		
+		//now we need to find out how long the key is, so we can extract the correct hunk
+		//of bytes from the buffer.
+		var len = Int(keyAsArray[idx])
+		idx += 1
+		let det = len & 0x80 //check if the high bit set
+		if (det == 0) {
+			//no? then the length of the key is a number that fits in one byte, (< 128)
+			len = len & 0x7f
+		}
+		else {
+			//otherwise, the length of the key is a number that doesn't fit in one byte (> 127)
+			var byteCount = Int(len & 0x7f)
+			if (byteCount + idx > privkey.count) {
+				return nil
+			}
+			//so we need to snip off byteCount bytes from the front, and reverse their order
+			var accum: UInt = 0
+			var idx2 = idx
+			idx += byteCount
+			while (byteCount > 0) {
+				//after each byte, we shove it over, accumulating the value into accum
+				accum = (accum << 8) + UInt(keyAsArray[idx2])
+				idx2 += 1
+				byteCount -= 1
+			}
+			// now we have read all the bytes of the key length, and converted them to a number,
+			// which is the number of bytes in the actual key.  we use this below to extract the
+			// key bytes and operate on them
+			len = Int(accum)
+		}
+		return privkey.subdata(in: idx..<idx + len)
+	}
+	
+	
+	
+	/*----------------------------------------------------------------------*/
+	
+	
+	//MARK:- Depricated
+	
+//	private static let padding = SecPadding.PKCS1
+//
+//	/// Returns the data in encrypted form
+//	///
+//	/// - Parameters:
+//	///   - data: the data to be encrypted
+//	///   - rsaKeyRef: the RSA key
+//	public static func encryptWithRSAKey(data: Data, rsaKeyRef: SecKey) -> Data? {
+//		let blockSize = SecKeyGetBlockSize(rsaKeyRef)
+//		let dataSize = data.count / MemoryLayout<UInt8>.size
+//		let maxChunkSize = (padding == SecPadding.OAEP) ? (blockSize - 42) : (blockSize - 11)
+//
+//		var dataAsArray = [UInt8](repeating: 0, count: dataSize)
+//		(data as NSData).getBytes(&dataAsArray, length: dataSize)
+//
+//		var encryptedData = [UInt8](repeating: 0, count: 0)
+//		var idx = 0
+//		while (idx < dataAsArray.count ) {
+//			var idxEnd = idx + maxChunkSize
+//			if ( idxEnd > dataAsArray.count ) {
+//				idxEnd = dataAsArray.count
+//			}
+//			var chunkData = [UInt8](repeating: 0, count: maxChunkSize)
+//			for i in idx..<idxEnd {
+//				chunkData[i-idx] = dataAsArray[i]
+//			}
+//			var encryptedDataBuffer = [UInt8](repeating: 0, count: blockSize)
+//			var encryptedDataLength = blockSize
+//
+//			let status = SecKeyEncrypt(rsaKeyRef, padding, chunkData, idxEnd - idx, &encryptedDataBuffer, &encryptedDataLength)
+//			if status != noErr {
+//				print("Error while encrypting, status:", status)
+//				return nil
+//			}
+//			encryptedData += encryptedDataBuffer
+//			idx += maxChunkSize
+//		}
+//		return Data(bytes: UnsafePointer<UInt8>(encryptedData), count: encryptedData.count)
+//	}
+//
+//
+//	public static func encryptWithRSAKey(data: Data, rsaKeyData: Data) -> Data? {
+//		guard let pubSecKey = convertPublicKeyData(pubKey: rsaKeyData) else {
+//			return nil
+//		}
+//		return encryptWithRSAKey(data: data, rsaKeyRef: pubSecKey)
+//	}
+//
+//
+//	public static func encryptWithRSAKey(string: String, rsaKeyData: Data) -> Data? {
+//		guard let pubSecKey = convertPublicKeyData(pubKey: rsaKeyData) else {
+//			return nil
+//		}
+//		guard let dataForEncrypt = string.data(using: String.Encoding.utf8) else {
+//			print("Error convertation String -> Data!")
+//			return nil
+//		}
+//		return encryptWithRSAKey(data: dataForEncrypt, rsaKeyRef: pubSecKey)
+//	}
+//
+//
+//
+//
+//
+//	/// Decrypts data with a RSA key.
+//	///
+//	/// - Parameters:
+//	///   - encryptedData: the data wich will be decrypted
+//	///   - rsaKeyRef: the RSA key
+//	/// - Returns: the decrypted data
+//	public static func decrypt(encryptedData: Data) -> Data? {
+//		guard let privSecKey = privSecKey else { return nil }
+//		let blockSize = SecKeyGetBlockSize(privSecKey)
+//		let dataSize = encryptedData.count / MemoryLayout<UInt8>.size
+//		var encryptedDataAsArray = [UInt8](repeating: 0, count: dataSize)
+//		(encryptedData as NSData).getBytes(&encryptedDataAsArray, length: dataSize)
+//
+//		var decryptedData = [UInt8](repeating: 0, count: 0)
+//		var idx = 0
+//		while idx < encryptedDataAsArray.count {
+//			var idxEnd = idx + blockSize
+//			if idxEnd > encryptedDataAsArray.count {
+//				idxEnd = encryptedDataAsArray.count
+//			}
+//			// create array of bytes
+//			var chunkData = [UInt8](repeating: 0, count: blockSize)
+//			for i in idx..<idxEnd {
+//				chunkData[i - idx] = encryptedDataAsArray[i]
+//			}
+//			var decryptedDataBuffer = [UInt8](repeating: 0, count: blockSize)
+//			var decryptedDataLength = blockSize
+//
+//			let status = SecKeyDecrypt(privSecKey, padding, chunkData, idxEnd - idx, &decryptedDataBuffer, &decryptedDataLength)
+//			if status != noErr {
+//				print("Error, SecKeyDecrypt failed with status \(status)!")
+//				return nil
+//			}
+//			let finalData = removePadding(decryptedDataBuffer)
+//			decryptedData += finalData
+//
+//			idx += blockSize
+//		}
+//		print("Successfully decrypt data :-)")
+//		return Data(bytes: UnsafePointer<UInt8>(decryptedData), count: decryptedData.count)
+//	}
+//
+//
+//	public static func rsa_decrypt(inputData: Data) -> Data? {
+//		guard let privSecKey = privSecKey else { return nil }
+//		guard inputData.count == SecKeyGetBlockSize(privSecKey) else {
+//			return nil
+//		}
+//		let key_size = SecKeyGetBlockSize(privSecKey)
+//		var decrypt_bytes = [UInt8](repeating: 0, count: key_size)
+//		var output_size: Int = key_size
+//
+//		let status = SecKeyDecrypt(privSecKey, SecPadding.OAEP, arrayOfBytes(inputData), inputData.count, &decrypt_bytes, &output_size)
+//		if status == errSecSuccess {
+//			print("Successfully decrypt data :-)")
+//			return Data(bytes: UnsafePointer<UInt8>(decrypt_bytes), count: output_size)
+//		}
+//		print("Error, SecKeyDecrypt failed with status \(status)!")
+//		return nil
+//	}
+//	private static func arrayOfBytes(_ data: Data) -> [UInt8] {
+//		let count = data.count / MemoryLayout<UInt8>.size
+//		var bytesArray = [UInt8](repeating: 0, count: count)
+//		(data as NSData).getBytes(&bytesArray, length:count * MemoryLayout<UInt8>.size)
+//		return bytesArray
+//	}
+//
+//
+//	public static func decrypt(encrpted: Data) -> String? {
+//		guard let privSecKey = privSecKey else { return nil }
+//		var plaintextBufferSize = Int(SecKeyGetBlockSize(privSecKey))
+//		var plaintextBuffer = [UInt8](repeating: 0, count: Int(plaintextBufferSize))
+//
+//		let status = SecKeyDecrypt(privSecKey, padding, arrayOfBytes(encrpted), plaintextBufferSize, &plaintextBuffer, &plaintextBufferSize)
+//
+//		if (status != errSecSuccess) {
+//			print("Failed Decrypt")
+//			return nil
+//		}
+//		print("Successfully decrypt data :-)")
+//		return NSString(bytes: &plaintextBuffer, length: plaintextBufferSize, encoding: String.Encoding.utf8.rawValue)! as String
+//	}
+//
+//
+//	public static func decryptMessage(_ encryptedData: Data) -> String? {
+//		guard let privSecKey = privSecKey else { return nil }
+//		// prepare input input plain text
+//		let encryptedText = (encryptedData as NSData).bytes.bindMemory(to: UInt8.self, capacity: encryptedData.count)
+//		let encryptedTextLen = encryptedData.count
+//
+//		// prepare output data buffer
+//		var plainData = Data(count: 1024)
+//		let plainText = plainData.withUnsafeMutableBytes({
+//			(bytes: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+//			return bytes
+//		})
+//		var plainTextLen = plainData.count
+//
+//		let status = SecKeyDecrypt(privSecKey, padding, encryptedText, encryptedTextLen, plainText, &plainTextLen)
+//		if status == errSecSuccess {
+//			// adjust NSData length
+//			plainData.count = plainTextLen
+//			// Generate and return result string
+//			if let string = NSString(data: plainData as Data, encoding: String.Encoding.utf8.rawValue) as String? {
+//				print("Successfully decrypt data :-)")
+//				return string
+//			}
+//			else {
+//				print("Error, can't create String from Data!")
+//				return nil
+//			}
+//		}
+//		print("Error, SecKeyDecrypt failed with status \(status)")
+//		plainText.deinitialize(count: 1)
+//		return nil
+//	}
+//
+//
+//	/// Remove padding on decrypting
+//	public static func removePadding(_ data: [UInt8]) -> [UInt8] {
+//		var idxFirstZero = -1
+//		var idxNextZero = data.count
+//		for i in 0..<data.count {
+//			if ( data[i] == 0 ) {
+//				if ( idxFirstZero < 0 ) {
+//					idxFirstZero = i
+//				}
+//				else {
+//					idxNextZero = i
+//					break
+//				}
+//			}
+//		}
+//		if idxNextZero - idxFirstZero - 1 == 0 {
+//			idxNextZero = idxFirstZero
+//			idxFirstZero = -1
+//		}
+//		var newData = [UInt8](repeating: 0, count: idxNextZero - idxFirstZero - 1)
+//		for i in idxFirstZero + 1..<idxNextZero {
+//			newData[i - idxFirstZero - 1] = data[i]
+//		}
+//		return newData
+//	}
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
