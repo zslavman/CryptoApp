@@ -30,42 +30,35 @@ class ViewController: UIViewController {
 	}
 	
 	@objc private func onLeftClick(){
-		if RSAManager.isKeyPairExists(withTag: .accountPublicKey) {
+		if RSAManager.isKeyPairExists(withTag: .accountKey) {
 			print("Already have keys")
 			return
 		}
-		RSAManager.generatePairRSA(withTag: .accountPublicKey)
+		RSAManager.generatePairRSA(withTag: .accountKey)
 		print("Keys successfully generated!")
 	}
 	@objc private func onRightClick(){
-		RSAManager.deleteSecureKeyPair(withTag: .accountPublicKey) {
+		RSAManager.deleteSecureKeyPair(withTag: .accountKey) {
 			(success: Bool) in
 			let toPrint = success ? "Keys successfully deleted!" : "No keys found!"
 			print(toPrint)
 		}
 	}
 	
-	@IBAction private func onEncryptClick(sender: UIButton){
+	@IBAction private func onEncryptClick(sender: UIButton) {
 		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
-		guard let messageData = str.data(using: String.Encoding.utf8) else {
-				print("Bad message to encrypt")
-				return
-		}
-		guard let pubKey = RSAManager.getSecKeyFromKeychain(withTag: .accountPublicKey, access: .publicA) else {
-			print("Public key not found!")
-			return
-		}
-		guard let encryptData = SecKeyCreateEncryptedData(pubKey,
-														  SecKeyAlgorithm.rsaEncryptionPKCS1,
-														  messageData as CFData,
-														  nil) else {
-			print("Error encrypting")
-			return
-		}
-		let encryptedData = encryptData as Data
+		guard let rsaKeyRef = RSAManager.getSecKeyFromKeychain(withTag: .accountKey, access: .publicA) else { return }
+		guard let encryptedData = RSAManager.encryptSimple(str: str, rsaKeyRef: rsaKeyRef) else { return }
 		print("Successfully encrypted, length: \(encryptedData.count) bytes")
-		let encryptedString = encryptedData.base64EncodedString()
-		out_Field.text = encryptedString
+		out_Field.text = encryptedData.base64EncodedString()
+		
+		// ----------------------------------------
+//		guard let rsaKeyRef = RSAManager.getSecKeyFromKeychain(withTag: .accountKey, access: .publicA) else {
+//			return
+//		}
+//		guard let encryptedData = RSAManager.encryptWithRSAKey(data: str.data(using: String.Encoding.utf8)!,
+//															   rsaKeyRef: rsaKeyRef) else { return }
+//		out_Field.text = encryptedData.base64EncodedString()
 	}
 	
 	
@@ -76,7 +69,7 @@ class ViewController: UIViewController {
 			print("Bad message to decrypt")
 			return
 		}
-		guard let privKey = RSAManager.getSecKeyFromKeychain(withTag: .accountPublicKey, access: .privateA) else {
+		guard let privKey = RSAManager.getSecKeyFromKeychain(withTag: .accountKey, access: .privateA) else {
 			print("Private key not found!")
 			return
 		}
@@ -93,8 +86,19 @@ class ViewController: UIViewController {
 			return
 		}
 		out_Field.text = decryptedString
+		
+		
+		// ----------------------------------------
+//		guard let decryptedData = RSAManager.decrypt(encryptedData: str.data(using: String.Encoding.utf8)!) else { return }
+//		out_Field.text = decryptedData.base64EncodedString()
+		
+//		guard let decryptedString = RSAManager.decprypt(encrpted: str.data(using: String.Encoding.utf8)!) else { return }
+//		out_Field.text = decryptedString
+		
+//		guard let decryptedString = RSAManager.decrypt(source: str.data(using: String.Encoding.utf8)!) else { return }
+//		out_Field.text = decryptedString
 	}
-	
+		
 	
 	
 
