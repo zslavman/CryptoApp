@@ -39,12 +39,11 @@ class RSAManager {
 	// private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1AESGCM // GOOG for all sizes
 	private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA256AESGCM	// GOOD for all sizes
 	
-	
 	//MARK:- Key-pair Generation methods
 	
 	// most proper native key-pair creation with save into persistent store
 	@discardableResult
-	public static func generatePairRSA(withTag: KeyIdentifier) -> (Data, Data)? {
+	public static func generatePairRSA(withTag: KeyIdentifier) -> Data? {
 		deleteSecureKeyPair(withTag: withTag, nil)
 		
 		let publicKeyAttr: [NSObject: Any] = [
@@ -61,40 +60,32 @@ class RSAManager {
 		]
 		let keyPairAttr: [NSObject: Any] = [
 			kSecAttrKeyType 		: kSecAttrKeyTypeRSA,
-			kSecAttrKeySizeInBits 	: 2048 as NSObject,
+			kSecAttrKeySizeInBits 	: 2048,
 			kSecPublicKeyAttrs		: publicKeyAttr,
 			kSecPrivateKeyAttrs		: privateKeyAttr,
-//			kSecAttrCanDecrypt		: true
+			kSecAttrCanDecrypt		: true
 		]
 		var pubSecKey: SecKey?
 		var privSecKey: SecKey?
+		// generate keys & save it into keychain
 		let statusGenerate = SecKeyGeneratePair(keyPairAttr as CFDictionary, &pubSecKey, &privSecKey)
 		guard statusGenerate == errSecSuccess else {
 			print("Error while generate pair: \(statusGenerate)")
 			return nil
 		}
 		// convert SecKey -> Data
-		var pubDataKey: AnyObject?
-		var privDataKey: AnyObject?
-		let statusPublicKey = SecItemCopyMatching(publicKeyAttr as CFDictionary, &pubDataKey)
-		let statusPrivateKey = SecItemCopyMatching(privateKeyAttr as CFDictionary, &privDataKey)
-		
-		guard let publicKey = pubDataKey, let  privateKey = privDataKey else { return nil }
-		guard statusPublicKey == errSecSuccess, statusPrivateKey == errSecSuccess else {
-			print("Error in: \(statusPublicKey) or \(statusPrivateKey)")
-			return nil
-		}
-		let pub = (publicKey as! Data).base64EncodedString()
-		let priv = (privateKey as! Data).base64EncodedString()
-		RSAManager.smartPrint(string: pub, identifier: .publicDescr)
-		RSAManager.smartPrint(string: priv, identifier: .privateDescr)
-		
-		return (publicKey as! Data, privateKey as! Data)
+		guard let pubKey = pubSecKey, let _ = privSecKey else { return nil }
+		var error: Unmanaged<CFError>?
+		let pubData = SecKeyCopyExternalRepresentation(pubKey, &error)! as Data
+		printKeys()
+		print("Keys successfully generated!")
+		return (pubData)
 	}
 	
 	
 	// native random key-pair creation with save into persistent store
-	public static func generateRandomPairRSA(withTag: KeyIdentifier) {
+	@discardableResult
+	public static func generateRandomPairRSA(withTag: KeyIdentifier) -> Data? {
 		deleteSecureKeyPair(withTag: withTag, nil)
 		
 		let attributes: [NSObject: Any] = [
@@ -106,19 +97,19 @@ class RSAManager {
 			]
 		]
 		var error: Unmanaged<CFError>?
-		if let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) { // 1193 bytes
+		if let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) {
 			// Gets the public key associated with the given private key.
-			let publicKey = SecKeyCopyPublicKey(privateKey)! //270 bytes
-			var error: Unmanaged<CFError>?
+			let publicKey = SecKeyCopyPublicKey(privateKey)!
 			// save to keychain
 			addSecKeyToKeychain(secKey: privateKey, access: .privateA, tagName: withTag)
 			addSecKeyToKeychain(secKey: publicKey, access: .publicA, tagName: withTag)
-			// print
-			let data = SecKeyCopyExternalRepresentation(publicKey, &error)! as Data
-			RSAManager.smartPrint(string: data.base64EncodedString(), identifier: .publicDescr)
+			// printKeys()
+			print("Keys successfully generated!")
+			return getKeyData(withTag: .accountKey, access: .publicA)
 		}
 		else {
 			print(error!.takeRetainedValue() as Error)
+			return nil
 		}
 	}
 	
@@ -197,7 +188,19 @@ class RSAManager {
 	
 	//MARK:- other...
 	
-	public static func getSecKeyFromKeychain(withTag: KeyIdentifier, access: AccessIdentif) -> SecKey? {
+	
+	/// execution speed measurement
+	public static func timeMeasuringCodeRunning(title: String, operationBlock: () -> ()) {
+		let start = CFAbsoluteTimeGetCurrent()
+		operationBlock()
+		let finish = CFAbsoluteTimeGetCurrent()
+		let timeElapsed = finish - start
+		let roundedTime = String(format: "%.3f", timeElapsed)
+		print ("Время выполнения \(title) = \(roundedTime) секунд")
+	}
+	
+	
+	public static func getSecKeyFromKeychain(withTag: KeyIdentifier, access: AccessIdentif, printExists: Bool = true) -> SecKey? {
 		let parameters:[NSObject : Any]  = [
 			kSecClass				: kSecClassKey,
 			kSecAttrKeyClass		: (access == .publicA) ? kSecAttrKeyClassPublic : kSecAttrKeyClassPrivate,
@@ -210,7 +213,9 @@ class RSAManager {
 		if status == errSecSuccess {
 			return ref as! SecKey?
 		}
-		print("Error: \(access) key not found!")
+		if printExists {
+			print("Error: \(access) key not found!")
+		}
 		return nil
 	}
 	
@@ -225,7 +230,7 @@ class RSAManager {
 			kSecAttrKeyType       	: kSecAttrKeyTypeRSA,
 			kSecAttrApplicationTag	: tagName,
 			kSecAttrKeyClass        : kSecAttrKeyClassPublic,
-			kSecReturnPersistentRef	: false // nedd test!
+			kSecReturnPersistentRef	: false //TODO: nedd test!
 		]
 		if let secKeyPublic = SecKeyCreateWithData(pubkeyData as CFData, queryFilter as CFDictionary, nil) {
 			return secKeyPublic
@@ -299,12 +304,12 @@ class RSAManager {
 	
 	
 
-	public static func getKeyData(withTag: String, access: AccessIdentif) -> Data? {
+	public static func getKeyData(withTag: KeyIdentifier, access: AccessIdentif) -> Data? {
 		let parameters:[String : Any]  = [
 			String(kSecClass)				: kSecClassKey,
 			String(kSecAttrKeyClass)		: (access == .publicA) ? kSecAttrKeyClassPublic : kSecAttrKeyClassPrivate,
 			String(kSecAttrKeyType)			: kSecAttrKeyTypeRSA,
-			String(kSecAttrApplicationTag)	: withTag,
+			String(kSecAttrApplicationTag)	: withTag.rawValue.data(using: String.Encoding.utf8)!,
 			String(kSecReturnData)			: true
 		]
 		var data: AnyObject?
@@ -317,7 +322,7 @@ class RSAManager {
 	
 	
 	public static func isKeyPairExists(withTag: KeyIdentifier) -> Bool {
-		return RSAManager.getSecKeyFromKeychain(withTag: withTag, access: .privateA) != nil
+		return RSAManager.getSecKeyFromKeychain(withTag: withTag, access: .privateA, printExists: false) != nil
 	}
 	
 	
@@ -333,13 +338,6 @@ class RSAManager {
 				completion?(status == errSecSuccess)
 			//}
 		//}
-	}
-	
-	
-	public static func smartPrint(string: String, identifier: DescriptionIdentifier) {
-		let prefix = identifier.rawValue
-		let suffix: String = "\n"
-		print("\(prefix)\n\(string)\(suffix)")
 	}
 	
 	
@@ -420,6 +418,22 @@ class RSAManager {
 		return privkey.subdata(in: idx..<idx + len)
 	}
 	
+
+	public static func smartPrint(string: String, identifier: DescriptionIdentifier) {
+		let prefix = identifier.rawValue
+		let suffix: String = "\n"
+		print("\(prefix)\n\(string)\(suffix)")
+	}
+	
+	private static func printKeys() {
+		let pubKey = getKeyData(withTag: .accountKey, access: .publicA) 	// 270 bytes
+		let privKey = getKeyData(withTag: .accountKey, access: .privateA) 	// 1090 - 1093 bytes
+		guard let pubData = pubKey, let privData = privKey else { return }
+		print(pubData)
+		smartPrint(string: pubData.base64EncodedString(), identifier: .publicDescr)
+		print(privData)
+		smartPrint(string: privData.base64EncodedString(), identifier: .privateDescr)
+	}
 	
 	
 	/*----------------------------------------------------------------------*/

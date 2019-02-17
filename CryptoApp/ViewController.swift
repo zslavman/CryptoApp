@@ -33,14 +33,14 @@ class ViewController: UIViewController {
 	}
 	
 	@objc private func onLeftClick(){
-//		if RSAManager.isKeyPairExists(withTag: .accountKey) {
-//			print("Already have keys")
-//			return
-//		}
-//		print("Keys successfully generated!")
+		if RSAManager.isKeyPairExists(withTag: .accountKey) {
+			print("Already have keys")
+			return
+		}
 		RSAManager.generatePairRSA(withTag: .accountKey)
-		//RSAManager.generateRandomPairRSA(withTag: .accountKey)
 	}
+	
+	
 	
 	@objc private func onRightClick(){
 		RSAManager.deleteSecureKeyPair(withTag: .accountKey) {
