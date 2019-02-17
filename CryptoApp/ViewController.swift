@@ -37,29 +37,40 @@ class ViewController: UIViewController {
 			print("Already have keys")
 			return
 		}
-		RSAManager.generatePairRSA(withTag: .accountKey)
+		//RSAManager.generatePairKeys(withTag: .accountKey, algorithm: .EC)
+		RSAManager.generateAllKeys()
 	}
 	
 	
 	
 	@objc private func onRightClick(){
-		RSAManager.deleteSecureKeyPair(withTag: .accountKey) {
-			(success: Bool) in
-			let toPrint = success ? "Keys successfully deleted!" : "No keys found!"
-			print(toPrint)
-		}
+		RSAManager.deleteSecureKeyPair(withTag: .accountKey, nil)
 	}
 	
 	@IBAction private func onEncryptClick(sender: UIButton) {
 		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
-		guard let rsaKeyRef = RSAManager.getSecKeyFromKeychain(withTag: .accountKey, access: .publicA) else { return }
-		guard let encryptedData = RSAManager.encryptWithSecKey(str: str, rsaPublicKeyRef: rsaKeyRef) else { return }
+		guard let rsaKeyData = RSAManager.getKeyData(withTag: .accountKey, access: .publicA) else { return }
+		guard let encryptedData = RSAManager.encryptWithDataKey(data: str.data(using: String.Encoding.utf8)!,
+																rsaPublicKeyData: rsaKeyData) else { return }
 		print("Successfully encrypted, length: \(encryptedData.count) bytes")
 		out_Field.text = encryptedData.base64EncodedString()
+		
+		//guard let signedStr = RSAManager.signMessage(str: str) else { return }
+		//out_Field.text = signedStr
 	}
+	
 	
 	@IBAction private func onDecryptClick(sender: UIButton){
 		guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
+		
+		// signing message
+//		guard let signatureStr = RSAManager.signMessage(str: str) else { return }
+//		print(signatureStr)
+//		guard let privECkey = RSAManager.getSecKeyFromKeychain(withTag: .deviceKey, access: .privateA) else { return }
+//		// verify message
+//		let _ = RSAManager.verifySign(messageStr: str, signatueStr: signatureStr, notMySecKey: privECkey)
+		//-----------------
+		
 		guard let decryptedData = RSAManager.decrypt(str: str) else { return }
 		guard let decryptedString = String(data: decryptedData, encoding: String.Encoding.utf8) else {
 			print("Decrypt error: could't get string")

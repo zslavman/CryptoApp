@@ -14,13 +14,17 @@ enum DescriptionIdentifier: String {
 	case publicDescr = "----- RSA PUBLIC KEY -----"
 	case privateDescr = "----- RSA PRIVATE KEY -----"
 }
-enum KeyIdentifier: String {
-	case accountKey = "accountPublicKey"
-	//case deviceKey = "devicePublicKey" // not using yet
+enum KeyTag: String {
+	case accountKey = "accountPublicKey"// for crypt/decrypt
+	case deviceKey = "devicePublicKey" 	// for signing/verify
 }
 enum AccessIdentif {
 	case publicA
 	case privateA
+}
+enum CryptoAlg {
+	case RSA 	// for crypt/decrypt
+	case EC		// for signing/verify
 }
 
 
@@ -35,15 +39,27 @@ class RSAManager {
 	* "key block size - 66" bytes long and returned block has always the same size as block size, as returned
 	* by SecKeyGetBlockSize().  Use kSecKeyAlgorithmRSAEncryptionOAEPSHA256AESGCM to be able to encrypt and decrypt arbitrary long data
 	*/
-	// private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1 		// works lower 224 bytes only
-	// private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1AESGCM // GOOG for all sizes
-	private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA256AESGCM	// GOOD for all sizes
+	// private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1 				// works lower 224 bytes only
+	// private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1AESGCM 		// GOOG for all sizes
+	private static let cryptoSecKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA256AESGCM	// GOOD for all sizes
+	private static let signSecKeyAlgorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
+	private static let keySizeRSA = 2048
+	private static let keySizeEC = 256
 	
 	//MARK:- Key-pair Generation methods
 	
+	/// Generate both type keys - for crypt/decrypt & sign/verify and save it into keychain
+	@discardableResult
+	public static func generateAllKeys() -> (Data, Data)? {
+		let pubKeyRSA = generatePairKeys(withTag: .accountKey, algorithm: .RSA)
+		let pubKeyEC = generatePairKeys(withTag: .deviceKey, algorithm: .EC)
+		guard let rsaKey = pubKeyRSA, let ecKey = pubKeyEC else { return nil }
+		return (rsaKey, ecKey)
+	}
+	
 	// most proper native key-pair creation with save into persistent store
 	@discardableResult
-	public static func generatePairRSA(withTag: KeyIdentifier) -> Data? {
+	public static func generatePairKeys(withTag: KeyTag, algorithm: CryptoAlg) -> Data? {
 		deleteSecureKeyPair(withTag: withTag, nil)
 		
 		let publicKeyAttr: [NSObject: Any] = [
@@ -59,8 +75,8 @@ class RSAManager {
 			kSecReturnData			: true
 		]
 		let keyPairAttr: [NSObject: Any] = [
-			kSecAttrKeyType 		: kSecAttrKeyTypeRSA,
-			kSecAttrKeySizeInBits 	: 2048,
+			kSecAttrKeyType 		: (algorithm == .RSA) ? kSecAttrKeyTypeRSA : kSecAttrKeyTypeEC,
+			kSecAttrKeySizeInBits 	: (algorithm == .RSA) ? keySizeRSA : keySizeEC,
 			kSecPublicKeyAttrs		: publicKeyAttr,
 			kSecPrivateKeyAttrs		: privateKeyAttr,
 			kSecAttrCanDecrypt		: true
@@ -77,15 +93,15 @@ class RSAManager {
 		guard let pubKey = pubSecKey, let _ = privSecKey else { return nil }
 		var error: Unmanaged<CFError>?
 		let pubData = SecKeyCopyExternalRepresentation(pubKey, &error)! as Data
-		printKeys()
-		print("Keys successfully generated!")
+		//printKeys()
+		print("\(algorithm) keys successfully generated!")
 		return (pubData)
 	}
 	
 	
 	// native random key-pair creation with save into persistent store
 	@discardableResult
-	public static func generateRandomPairRSA(withTag: KeyIdentifier) -> Data? {
+	public static func generatePairRSA(withTag: KeyTag) -> Data? {
 		deleteSecureKeyPair(withTag: withTag, nil)
 		
 		let attributes: [NSObject: Any] = [
@@ -113,6 +129,12 @@ class RSAManager {
 		}
 	}
 	
+	
+	public static func generatePairES(withTag: KeyTag){
+		
+	}
+	
+	
 	/*----------------------------------------------------------------------*/
 	
 	
@@ -121,7 +143,7 @@ class RSAManager {
 	
 	public static func encryptWithSecKey(data: Data, rsaPublicKeyRef: SecKey) -> Data? {
 		guard let encrData = SecKeyCreateEncryptedData(rsaPublicKeyRef,
-														  secKeyAlgorithm,
+														  cryptoSecKeyAlgorithm,
 														  data as CFData,
 														  nil) else {
 			print("Error encrypting")
@@ -161,13 +183,13 @@ class RSAManager {
 	public static func decrypt(data: Data) -> Data? {
 		guard let privSecKey = privSecKey else { return nil }
 		guard let decryptData = SecKeyCreateDecryptedData(privSecKey,
-														  secKeyAlgorithm,
+														  cryptoSecKeyAlgorithm,
 														  data as CFData,
 														  nil) else {
 			print("Error decrypting. Bad key for decryption!")
 			return nil
 		}
-		print("Successfully decrypt data :-)")
+		print("Successfully decrypted!")
 		return decryptData as Data
 	}
 	
@@ -180,6 +202,51 @@ class RSAManager {
 		return decrypt(data: messageData)
 	}
 	
+	
+	/*----------------------------------------------------------------------*/
+	
+	
+	//MARK:- Signing and Verification
+	
+	public static func signMessage(str: String) -> String? {
+		guard let messageData = str.data(using: String.Encoding.utf8) else {
+				print("Bad message to sign")
+				return nil
+		}
+		guard let privSecKey = getSecKeyFromKeychain(withTag: .deviceKey, access: .privateA) else { return nil }
+		var error: Unmanaged<CFError>?
+		guard let signedData = SecKeyCreateSignature(privSecKey, // finger print proteted
+												   signSecKeyAlgorithm,
+												   messageData as CFData,
+												   &error) else {
+			print(error!.takeRetainedValue() as Error)
+			return nil
+		}
+		//convert signed to base64 string
+		let signedStr = (signedData as Data).base64EncodedString()
+		return signedStr
+	}
+	
+	
+	
+	public static func verifySign(messageStr: String, signatueStr: String, notMySecKey: SecKey) -> Bool {
+		guard let messageData = messageStr.data(using: String.Encoding.utf8) else {
+				print("Bad message to verify")
+				return false
+		}
+		let pubEncKey = signatueStr // there is is small problem in this place
+		guard let signatureData = Data(base64Encoded: pubEncKey) else {
+				print("Bad signature to verify")
+				return false
+		}
+		let verify = SecKeyVerifySignature(notMySecKey,
+										   signSecKeyAlgorithm,
+										   messageData as CFData,
+										   signatureData as CFData,
+										   nil)
+		print(verify ? "Signature matches for key" : "Signature DOESN'T matches")
+		return verify
+	}
 	
 	
 	
@@ -200,11 +267,11 @@ class RSAManager {
 	}
 	
 	
-	public static func getSecKeyFromKeychain(withTag: KeyIdentifier, access: AccessIdentif, printExists: Bool = true) -> SecKey? {
+	public static func getSecKeyFromKeychain(withTag: KeyTag, access: AccessIdentif, printExists: Bool = true) -> SecKey? {
 		let parameters:[NSObject : Any]  = [
 			kSecClass				: kSecClassKey,
 			kSecAttrKeyClass		: (access == .publicA) ? kSecAttrKeyClassPublic : kSecAttrKeyClassPrivate,
-			kSecAttrKeyType			: kSecAttrKeyTypeRSA,
+			kSecAttrKeyType			: (withTag == .accountKey) ? kSecAttrKeyTypeRSA : kSecAttrKeyTypeEC,
 			kSecAttrApplicationTag	: withTag.rawValue,
 			kSecReturnRef			: true
 		]
@@ -214,7 +281,7 @@ class RSAManager {
 			return ref as! SecKey?
 		}
 		if printExists {
-			print("Error: \(access) key not found!")
+			print("Error: key '\(access)' not found!")
 		}
 		return nil
 	}
@@ -230,7 +297,7 @@ class RSAManager {
 			kSecAttrKeyType       	: kSecAttrKeyTypeRSA,
 			kSecAttrApplicationTag	: tagName,
 			kSecAttrKeyClass        : kSecAttrKeyClassPublic,
-			kSecReturnPersistentRef	: false //TODO: nedd test!
+			kSecReturnPersistentRef	: false
 		]
 		if let secKeyPublic = SecKeyCreateWithData(pubkeyData as CFData, queryFilter as CFDictionary, nil) {
 			return secKeyPublic
@@ -304,7 +371,7 @@ class RSAManager {
 	
 	
 
-	public static func getKeyData(withTag: KeyIdentifier, access: AccessIdentif) -> Data? {
+	public static func getKeyData(withTag: KeyTag, access: AccessIdentif) -> Data? {
 		let parameters:[String : Any]  = [
 			String(kSecClass)				: kSecClassKey,
 			String(kSecAttrKeyClass)		: (access == .publicA) ? kSecAttrKeyClassPublic : kSecAttrKeyClassPrivate,
@@ -317,16 +384,19 @@ class RSAManager {
 		if status == errSecSuccess {
 			return data as? Data
 		}
-		else { return nil }
+		else {
+			print("Error: key '\(withTag.rawValue)' not found!")
+			return nil
+		}
 	}
 	
 	
-	public static func isKeyPairExists(withTag: KeyIdentifier) -> Bool {
+	public static func isKeyPairExists(withTag: KeyTag) -> Bool {
 		return RSAManager.getSecKeyFromKeychain(withTag: withTag, access: .privateA, printExists: false) != nil
 	}
 	
 	
-	public static func deleteSecureKeyPair(withTag: KeyIdentifier, _ completion: ((_ success: Bool) -> Void)?) {
+	public static func deleteSecureKeyPair(withTag: KeyTag, _ completion: ((_ success: Bool) -> Void)?) {
 		// private query dictionary
 		let deleteQuery: [NSObject : Any] = [
 			kSecClass				: kSecClassKey,
@@ -336,6 +406,12 @@ class RSAManager {
 			let status = SecItemDelete(deleteQuery as CFDictionary) // delete private key
 			//DispatchQueue.main.async {
 				completion?(status == errSecSuccess)
+				if status == errSecSuccess {
+					print("Keys successfully deleted!")
+				}
+				else {
+					//print("Nothing to delete!")
+				}
 			//}
 		//}
 	}
@@ -343,7 +419,7 @@ class RSAManager {
 	
 	// Add RSA-key into keychain storage
 	@discardableResult
-	private static func addSecKeyToKeychain(secKey: SecKey, access: AccessIdentif, tagName: KeyIdentifier) -> SecKey? {
+	private static func addSecKeyToKeychain(secKey: SecKey, access: AccessIdentif, tagName: KeyTag) -> SecKey? {
 		let queryFilter: [NSObject : Any] = [
 			kSecClass            	: kSecClassKey,
 			kSecAttrKeyType      	: kSecAttrKeyTypeRSA,
