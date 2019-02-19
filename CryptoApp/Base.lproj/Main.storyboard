@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7uo-cs-PDP">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7uo-cs-PDP">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -68,10 +67,19 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="w00-Ab-x0f">
+                                <rect key="frame" x="133" y="261" width="109" height="29"/>
+                                <segments>
+                                    <segment title="  RSA  "/>
+                                    <segment title="  AES  "/>
+                                </segments>
+                                <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </segmentedControl>
                         </subviews>
                         <color key="backgroundColor" red="0.46131438019999998" green="0.83811396360000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="PnJ-eU-4mx" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="31T-Qh-Esh"/>
+                            <constraint firstItem="w00-Ab-x0f" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="8fA-2I-YpE"/>
                             <constraint firstItem="xcR-Bv-gL2" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="AiY-QW-ZtM"/>
                             <constraint firstItem="y9p-mO-Rp7" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QKU-YA-QG1"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="y9p-mO-Rp7" secondAttribute="bottom" constant="35" id="SWG-Ss-urO"/>
@@ -79,6 +87,7 @@
                             <constraint firstItem="PnJ-eU-4mx" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="9t6-W7-aug" secondAttribute="trailing" constant="8" symbolic="YES" id="dbB-MU-Jv0"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="PnJ-eU-4mx" secondAttribute="trailing" constant="37" id="ddu-fP-HVa"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="top" secondItem="xcR-Bv-gL2" secondAttribute="bottom" constant="-178" id="jJG-iF-Luh"/>
+                            <constraint firstItem="w00-Ab-x0f" firstAttribute="top" secondItem="xcR-Bv-gL2" secondAttribute="bottom" constant="19" id="jgO-If-43I"/>
                             <constraint firstItem="9t6-W7-aug" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="37" id="rfv-sI-Gcg"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -87,6 +96,7 @@
                     <connections>
                         <outlet property="inp_Field" destination="xcR-Bv-gL2" id="Kf0-iK-0dh"/>
                         <outlet property="out_Field" destination="y9p-mO-Rp7" id="bYS-de-Nwn"/>
+                        <outlet property="segmentedControl" destination="w00-Ab-x0f" id="PxN-zu-7ZP"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

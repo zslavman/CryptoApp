@@ -7,15 +7,15 @@
 //
 
 import UIKit
-//import CommonCrypto
+import CommonCrypto
 
 class ViewController: UIViewController {
 
-
 	@IBOutlet weak var inp_Field: UITextView!
 	@IBOutlet weak var out_Field: UITextView!
-	private let keyData = "1234567890123456".data(using: String.Encoding.utf8)! // 16 bytes for AES128
-	private let ivData 	= "abcdefghijklmnop".data(using: String.Encoding.utf8)! // 16 bytes for AES128
+	@IBOutlet weak var segmentedControl: UISegmentedControl!
+	private let keyData = "1234567890123456".data(using: .utf8)! 		// 16 bytes for AES128
+	
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -40,8 +40,7 @@ class ViewController: UIViewController {
 			print("Already have keys")
 			return
 		}
-		//RSAManager.generatePairKeys(withTag: .accountKey, algorithm: .EC)
-		RSAManager.generateAllKeys()
+		RSAManager.generatePairRSA(withTag: .accountKey)
 	}
 	
 	
@@ -51,57 +50,40 @@ class ViewController: UIViewController {
 	
 	
 	@IBAction private func onEncryptClick(sender: UIButton) {
-		//----------------- RSA -----------------
-//		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
-//		guard let rsaKeyData = RSAManager.getKeyData(withTag: .accountKey, access: .publicA) else { return }
-//		guard let encryptedData = RSAManager.encryptWithDataKey(data: str.data(using: String.Encoding.utf8)!,
-//																rsaPublicKeyData: rsaKeyData) else { return }
-//		print("Successfully encrypted, length: \(encryptedData.count) bytes")
-//		out_Field.text = encryptedData.base64EncodedString()
-		
-		//----------------- AES CBC -----------------
-//		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
-//		guard let strData = str.data(using: String.Encoding.utf8) else { return }
-//
-//		guard let cryptedData = RSAManager.encryptAES_CBC(dataToEncrypt: strData, keyData: keyData) else { return }
-//		out_Field.text = cryptedData.base64EncodedString()
-//		print(cryptedData)
-		
-		//----------------- AES CBC (extension) -----------------
 		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
-		guard let strData = str.data(using: String.Encoding.utf8) else { return }
-
-		if let encryptedData = strData.aesCrypt(keyData: keyData, ivData: ivData, operation: kCCEncrypt) {
+		//----------------- RSA-SKCS-1 -----------------
+		if segmentedControl.selectedSegmentIndex == 0 {
+			guard let rsaKeyData = RSAManager.getKeyData(withTag: .accountKey, access: .publicA) else { return }
+			guard let encryptedData = RSAManager.encryptWithDataKey(data: str.data(using: String.Encoding.utf8)!,
+																	rsaPublicKeyData: rsaKeyData) else { return }
+			print("Successfully encrypted, length: \(encryptedData.count) bytes")
 			out_Field.text = encryptedData.base64EncodedString()
+		}
+		//----------------- AES-CBC -----------------
+		else {
+			guard let strData = str.data(using: .utf8) else { return }
+			guard let cryptedData = RSAManager.encryptAES_CBC(data: strData, keyData: keyData) else { return }
+			out_Field.text = cryptedData.base64EncodedString()
 		}
 	}
 	
 	
 	@IBAction private func onDecryptClick(sender: UIButton) {
-		//----------------- RSA -----------------
-//		guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
-//		guard let decryptedData = RSAManager.decrypt(str: str) else { return }
-//		guard let decryptedString = String(data: decryptedData, encoding: String.Encoding.utf8) else {
-//			print("Decrypt error: could't get string")
-//			return
-//		}
-//		out_Field.text = decryptedString
-		
-		//----------------- AES CBC -----------------
-//		guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
-//		guard let cryptedData = str.data(using: String.Encoding.utf8) else { return }
-//		
-//		guard let decryptedData = RSAManager.decryptAES_CBC(dataToDecrypt: cryptedData, keyData: keyData) else { return }
-//		out_Field.text = decryptedData.base64EncodedString()
-//		print(decryptedData)
-		
-		//----------------- AES CBC (extension) -----------------
 		guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
-		guard let cryptedData = str.data(using: String.Encoding.utf8) else { return }
-		
-		if let decryptedData = cryptedData.aesCrypt(keyData: keyData, ivData: ivData, operation: kCCDecrypt){
-			out_Field.text = decryptedData.base64EncodedString()
-			//out_Field.text = String(bytes: decryptedData, encoding: .utf8) // does'nt work
+		//----------------- RSA-SKCS-1 -----------------
+		if segmentedControl.selectedSegmentIndex == 0 {
+			guard let decryptedData = RSAManager.decrypt(str: str) else { return }
+			guard let decryptedString = String(data: decryptedData, encoding: String.Encoding.utf8) else {
+				print("Decrypt error: could't get string")
+				return
+			}
+			out_Field.text = decryptedString
+		}
+		//----------------- AES-CBC -----------------
+		else {
+			guard let cryptedData = Data(base64Encoded: str) else { return } 	// VERY IMPORTANT to encode using this method!
+			guard let decryptedData = RSAManager.decryptAES_CBC(data: cryptedData, keyData: keyData) else { return }
+			out_Field.text = String(data: decryptedData, encoding: .utf8) 		// VERY IMPORTANT to encode using this method!
 		}
 	}
 	
