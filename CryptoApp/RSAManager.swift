@@ -3,16 +3,16 @@
 //  Teamly
 //
 //  Created by User on 14/02/19.
-//  https://lapo.it/asn1js/#
-//  https://github.com/cossacklabs/themis
-//  https://www.linkedin.com/pulse/ios-10-how-use-secure-enclave-touch-id-protect-your-keys-satyam-tyagi/
+//  lapo.it/asn1js/#
+//  github.com/cossacklabs/themis
+//  linkedin.com/pulse/ios-10-how-use-secure-enclave-touch-id-protect-your-keys-satyam-tyagi/
 
 import Foundation
-
+import CommonCrypto
 
 enum DescriptionIdentifier: String {
-	case publicDescr = "----- RSA PUBLIC KEY -----"
-	case privateDescr = "----- RSA PRIVATE KEY -----"
+	case publicDescr = "----- PUBLIC KEY -----"
+	case privateDescr = "----- PRIVATE KEY -----"
 }
 enum KeyTag: String {
 	case accountKey = "accountPublicKey"// for crypt/decrypt
@@ -725,7 +725,104 @@ class RSAManager {
 //		return newData
 //	}
 	
+	// The iv is prefixed to the encrypted data
+	public static func aesCBCEncrypt(data: Data, keyData: Data) throws -> Data {
+		let keyLength = keyData.count
+		let validKeyLengths = [kCCKeySizeAES128, kCCKeySizeAES192, kCCKeySizeAES256]
+		if !validKeyLengths.contains(keyLength) {
+			throw AESError.KeyError("Invalid key length", keyLength)
+		}
+		let ivSize = kCCBlockSizeAES128
+		let cryptLength = size_t(ivSize + data.count + kCCBlockSizeAES128)
+		var cryptData = Data(count:cryptLength)
+		
+		let status = cryptData.withUnsafeMutableBytes {
+			(ivBytes) in
+			SecRandomCopyBytes(kSecRandomDefault, kCCBlockSizeAES128, ivBytes)
+		}
+		if (status != 0) {
+			throw AESError.IVError("IV generation failed", Int(status))
+		}
+		var numBytesEncrypted: size_t = 0
+		let options = CCOptions(kCCOptionPKCS7Padding)
+		
+		let cryptStatus = cryptData.withUnsafeMutableBytes {
+			(cryptBytes) in
+			data.withUnsafeBytes {
+				(dataBytes) in
+				keyData.withUnsafeBytes {
+					(keyBytes) in
+					CCCrypt(CCOperation(kCCEncrypt),
+							CCAlgorithm(kCCAlgorithmAES),
+							options,
+							keyBytes, keyLength,
+							cryptBytes,
+							dataBytes, data.count,
+							cryptBytes + kCCBlockSizeAES128, cryptLength,
+							&numBytesEncrypted)
+				}
+			}
+		}
+		if UInt32(cryptStatus) == UInt32(kCCSuccess) {
+			cryptData.count = numBytesEncrypted + ivSize
+		}
+		else {
+			throw AESError.CryptorError("Encryption failed", Int(cryptStatus))
+		}
+		return cryptData;
+	}
+	
+	
+	
+	// The iv is prefixed to the encrypted data
+	public static func aesCBCDecrypt(data: Data, keyData: Data) throws -> Data? {
+		let keyLength = keyData.count
+		let validKeyLengths = [kCCKeySizeAES128, kCCKeySizeAES192, kCCKeySizeAES256]
+		if !validKeyLengths.contains(keyLength) {
+			throw AESError.KeyError("Invalid key length", keyLength)
+		}
+		let ivSize = kCCBlockSizeAES128
+		let clearLength = size_t(data.count - ivSize)
+		var clearData = Data(count: clearLength)
+		
+		var numBytesDecrypted: size_t = 0
+		let options = CCOptions(kCCOptionPKCS7Padding)
+		
+		let cryptStatus = clearData.withUnsafeMutableBytes {
+			(cryptBytes) in
+			data.withUnsafeBytes {
+				(dataBytes) in
+				keyData.withUnsafeBytes {
+					(keyBytes) in
+					CCCrypt(CCOperation(kCCDecrypt),
+							CCAlgorithm(kCCAlgorithmAES128),
+							options,
+							keyBytes, keyLength,
+							dataBytes,
+							dataBytes + kCCBlockSizeAES128, clearLength,
+							cryptBytes, clearLength,
+							&numBytesDecrypted)
+				}
+			}
+		}
+		if UInt32(cryptStatus) == UInt32(kCCSuccess) {
+			clearData.count = numBytesDecrypted
+		}
+		else {
+			throw AESError.CryptorError("Decryption failed", Int(cryptStatus))
+		}
+		return clearData
+	}
+	
 }
+
+
+enum AESError: Error {
+	case KeyError(String, Int)
+	case IVError(String, Int)
+	case CryptorError(String, Int)
+}
+
 
 
 

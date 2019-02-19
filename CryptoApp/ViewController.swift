@@ -13,6 +13,7 @@ class ViewController: UIViewController {
 
 	@IBOutlet weak var inp_Field: UITextView!
 	@IBOutlet weak var out_Field: UITextView!
+	private var keyData = "1234567890123456".data(using: String.Encoding.utf8)! // 16 bytes for AES128
 	
 	
 	override func viewDidLoad() {
@@ -25,6 +26,7 @@ class ViewController: UIViewController {
 		view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(onBackingClick)))
 		inp_Field.text = "123"
 	}
+	
 	
 	
 	
@@ -42,41 +44,70 @@ class ViewController: UIViewController {
 	}
 	
 	
-	
 	@objc private func onRightClick(){
 		RSAManager.deleteSecureKeyPair(withTag: .accountKey, nil)
 	}
 	
+	
 	@IBAction private func onEncryptClick(sender: UIButton) {
-		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
-		guard let rsaKeyData = RSAManager.getKeyData(withTag: .accountKey, access: .publicA) else { return }
-		guard let encryptedData = RSAManager.encryptWithDataKey(data: str.data(using: String.Encoding.utf8)!,
-																rsaPublicKeyData: rsaKeyData) else { return }
-		print("Successfully encrypted, length: \(encryptedData.count) bytes")
-		out_Field.text = encryptedData.base64EncodedString()
+		//----------------- RSA -----------------
+//		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
+//		guard let rsaKeyData = RSAManager.getKeyData(withTag: .accountKey, access: .publicA) else { return }
+//		guard let encryptedData = RSAManager.encryptWithDataKey(data: str.data(using: String.Encoding.utf8)!,
+//																rsaPublicKeyData: rsaKeyData) else { return }
+//		print("Successfully encrypted, length: \(encryptedData.count) bytes")
+//		out_Field.text = encryptedData.base64EncodedString()
 		
-		//guard let signedStr = RSAManager.signMessage(str: str) else { return }
-		//out_Field.text = signedStr
+		//----------------- AES CBC -----------------
+		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
+		guard let strData = str.data(using: String.Encoding.utf8) else { return }
+		
+		var cryptData: Data?
+		do {
+			cryptData = try RSAManager.aesCBCEncrypt(data: strData, keyData: keyData)
+			print("cryptData: \(cryptData! as NSData)")
+			if let unwrapped = cryptData {
+				out_Field.text = unwrapped.base64EncodedString()
+			}
+			else {
+				print("Error data encryption!")
+			}
+		}
+		catch (let status) {
+			print("Error aesCBCEncrypt: \(status)")
+		}
+		
 	}
 	
 	
-	@IBAction private func onDecryptClick(sender: UIButton){
+	@IBAction private func onDecryptClick(sender: UIButton) {
+		//----------------- RSA -----------------
+//		guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
+//		guard let decryptedData = RSAManager.decrypt(str: str) else { return }
+//		guard let decryptedString = String(data: decryptedData, encoding: String.Encoding.utf8) else {
+//			print("Decrypt error: could't get string")
+//			return
+//		}
+//		out_Field.text = decryptedString
+		
+		//----------------- AES CBC -----------------
 		guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
+		guard let cryptedData = str.data(using: String.Encoding.utf8) else { return }
 		
-		// signing message
-//		guard let signatureStr = RSAManager.signMessage(str: str) else { return }
-//		print(signatureStr)
-//		guard let privECkey = RSAManager.getSecKeyFromKeychain(withTag: .deviceKey, access: .privateA) else { return }
-//		// verify message
-//		let _ = RSAManager.verifySign(messageStr: str, signatueStr: signatureStr, notMySecKey: privECkey)
-		//-----------------
-		
-		guard let decryptedData = RSAManager.decrypt(str: str) else { return }
-		guard let decryptedString = String(data: decryptedData, encoding: String.Encoding.utf8) else {
-			print("Decrypt error: could't get string")
-			return
+		let decryptData: Data?
+		do {
+			decryptData = try RSAManager.aesCBCDecrypt(data: cryptedData, keyData: keyData)
+			print("decryptData: \(decryptData! as NSData)")
+			guard let unwrapped = decryptData else {
+				print("Error data decryption!")
+				return
+			}
+			out_Field.text = unwrapped.base64EncodedString()
 		}
-		out_Field.text = decryptedString
+		catch (let status) {
+			print("Error aesCBCDecrypt: \(status)")
+		}
+		
 	}
 		
 	
