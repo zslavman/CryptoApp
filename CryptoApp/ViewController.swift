@@ -7,14 +7,15 @@
 //
 
 import UIKit
+import CommonCrypto
 
 class ViewController: UIViewController {
 
 
 	@IBOutlet weak var inp_Field: UITextView!
 	@IBOutlet weak var out_Field: UITextView!
-	private var keyData = "1234567890123456".data(using: String.Encoding.utf8)! // 16 bytes for AES128
-	
+	private let keyData = "1234567890123456".data(using: String.Encoding.utf8)! // 16 bytes for AES128
+	private let ivData 	= "abcdefghijklmnop".data(using: String.Encoding.utf8)! // 16 bytes for AES128
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -59,24 +60,20 @@ class ViewController: UIViewController {
 //		out_Field.text = encryptedData.base64EncodedString()
 		
 		//----------------- AES CBC -----------------
+//		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
+//		guard let strData = str.data(using: String.Encoding.utf8) else { return }
+//
+//		guard let cryptedData = RSAManager.encryptAES_CBC(dataToEncrypt: strData, keyData: keyData) else { return }
+//		out_Field.text = cryptedData.base64EncodedString()
+//		print(cryptedData)
+		
+		//----------------- AES CBC (extension) -----------------
 		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
 		guard let strData = str.data(using: String.Encoding.utf8) else { return }
-		
-		var cryptData: Data?
-		do {
-			cryptData = try RSAManager.aesCBCEncrypt(data: strData, keyData: keyData)
-			print("cryptData: \(cryptData! as NSData)")
-			if let unwrapped = cryptData {
-				out_Field.text = unwrapped.base64EncodedString()
-			}
-			else {
-				print("Error data encryption!")
-			}
+
+		if let encryptedData = strData.aesCrypt(keyData: keyData, ivData: ivData, operation: kCCEncrypt) {
+			out_Field.text = encryptedData.base64EncodedString()
 		}
-		catch (let status) {
-			print("Error aesCBCEncrypt: \(status)")
-		}
-		
 	}
 	
 	
@@ -91,26 +88,22 @@ class ViewController: UIViewController {
 //		out_Field.text = decryptedString
 		
 		//----------------- AES CBC -----------------
+//		guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
+//		guard let cryptedData = str.data(using: String.Encoding.utf8) else { return }
+//		
+//		guard let decryptedData = RSAManager.decryptAES_CBC(dataToDecrypt: cryptedData, keyData: keyData) else { return }
+//		out_Field.text = decryptedData.base64EncodedString()
+//		print(decryptedData)
+		
+		//----------------- AES CBC (extension) -----------------
 		guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
 		guard let cryptedData = str.data(using: String.Encoding.utf8) else { return }
 		
-		let decryptData: Data?
-		do {
-			decryptData = try RSAManager.aesCBCDecrypt(data: cryptedData, keyData: keyData)
-			print("decryptData: \(decryptData! as NSData)")
-			guard let unwrapped = decryptData else {
-				print("Error data decryption!")
-				return
-			}
-			out_Field.text = unwrapped.base64EncodedString()
+		if let decryptedData = cryptedData.aesCrypt(keyData: keyData, ivData: ivData, operation: kCCDecrypt){
+			out_Field.text = decryptedData.base64EncodedString()
+			//out_Field.text = String(bytes: decryptedData, encoding: .utf8) // does'nt work
 		}
-		catch (let status) {
-			print("Error aesCBCDecrypt: \(status)")
-		}
-		
 	}
-		
-	
 	
 
 }

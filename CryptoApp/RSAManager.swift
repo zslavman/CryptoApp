@@ -511,6 +511,104 @@ class RSAManager {
 		smartPrint(string: privData.base64EncodedString(), identifier: .privateDescr)
 	}
 	
+	/*----------------------------------------------------------------------*/
+	
+	
+	//MARK:- AES-CBC
+	
+	public static func encryptAES_CBC(dataToEncrypt: Data, keyData: Data, iv: String? = nil) -> Data? {
+		let salt = (iv == nil) ? "qwertyuiopasdfgh" : iv!
+		guard salt.count == kCCBlockSizeAES128, let saltData = salt.data(using: .utf8) else {
+			print("Error: Failed to set an Initial Vector (IV)")
+			return nil }
+		guard keyData.count == kCCKeySizeAES128 else {
+			print("Error: Failed to set a key")
+			return nil }
+		return coreCrypt(data: dataToEncrypt, keyData: keyData, option: CCOperation(kCCEncrypt), ivData: saltData)
+	}
+	
+	
+	public static func decryptAES_CBC(dataToDecrypt: Data, keyData: Data) -> Data? {
+		guard keyData.count == kCCKeySizeAES128 else {
+			print("Error: Failed to set a key")
+			return nil }
+		return coreCrypt(data: dataToDecrypt, keyData: keyData, option: CCOperation(kCCDecrypt))
+	}
+	
+	
+	private static func coreCrypt(data: Data, keyData: Data, option: CCOperation, ivData: Data? = nil) -> Data? {
+		let saltData = (ivData == nil) ? "qwertyuiopasdfgh".data(using: .utf8)! : ivData!
+		let cryptLength = [UInt8](repeating: 0, count: data.count + kCCBlockSizeAES128).count
+		var cryptData   = Data(count: cryptLength)
+		let keyLength 	= [UInt8](repeating: 0, count: kCCBlockSizeAES128).count
+		let options   	= CCOptions(kCCOptionPKCS7Padding)
+		var bytesLength = Int(0)
+		
+		let status = cryptData.withUnsafeMutableBytes { cryptBytes in
+			data.withUnsafeBytes { dataBytes in
+				saltData.withUnsafeBytes { ivBytes in
+					keyData.withUnsafeBytes { keyBytes in
+						CCCrypt(option, CCAlgorithm(kCCAlgorithmAES), options, keyBytes, keyLength, ivBytes, dataBytes, data.count, cryptBytes, cryptLength, &bytesLength)
+					}
+				}
+			}
+		}
+		guard UInt32(status) == UInt32(kCCSuccess) else {
+			print("Error: Failed to crypt data. Status \(status)")
+			return nil
+		}
+		cryptData.removeSubrange(bytesLength..<cryptData.count)
+		return cryptData
+	}
+	
+	
+	
+	
+	
+	func aesCBCEncrypt(data:Data, keyData:Data) throws -> Data {
+		let keyLength = keyData.count
+		let validKeyLengths = [kCCKeySizeAES128, kCCKeySizeAES192, kCCKeySizeAES256]
+		if (validKeyLengths.contains(keyLength) == false) {
+			print("Invalid key length")
+		}
+		
+		let ivSize = kCCBlockSizeAES128;
+		let cryptLength = size_t(ivSize + data.count + kCCBlockSizeAES128)
+		var cryptData = Data(count: cryptLength)
+		
+		let status = cryptData.withUnsafeMutableBytes {ivBytes in
+			SecRandomCopyBytes(kSecRandomDefault, kCCBlockSizeAES128, ivBytes)
+		}
+		if (status != 0) {
+			print("IV generation failed")
+		}
+		
+		var numBytesEncrypted :size_t = 0
+		let options   = CCOptions(kCCOptionPKCS7Padding)
+		
+		let cryptStatus = cryptData.withUnsafeMutableBytes {cryptBytes in
+			data.withUnsafeBytes {dataBytes in
+				keyData.withUnsafeBytes {keyBytes in
+					CCCrypt(CCOperation(kCCEncrypt),
+							CCAlgorithm(kCCAlgorithmAES),
+							options,
+							keyBytes, keyLength,
+							cryptBytes,
+							dataBytes, data.count,
+							cryptBytes+kCCBlockSizeAES128, cryptLength,
+							&numBytesEncrypted)
+				}
+			}
+		}
+		if UInt32(cryptStatus) == UInt32(kCCSuccess) {
+			cryptData.count = numBytesEncrypted + ivSize
+		}
+		else {
+			print("Encryption failed")
+		}
+		
+		return cryptData;
+	}
 	
 	/*----------------------------------------------------------------------*/
 	
@@ -576,9 +674,6 @@ class RSAManager {
 //		}
 //		return encryptWithRSAKey(data: dataForEncrypt, rsaKeyRef: pubSecKey)
 //	}
-//
-//
-//
 //
 //
 //	/// Decrypts data with a RSA key.
@@ -724,108 +819,47 @@ class RSAManager {
 //		}
 //		return newData
 //	}
+}
+
+
+extension Data {
 	
-	// The iv is prefixed to the encrypted data
-	public static func aesCBCEncrypt(data: Data, keyData: Data) throws -> Data {
-		let keyLength = keyData.count
-		let validKeyLengths = [kCCKeySizeAES128, kCCKeySizeAES192, kCCKeySizeAES256]
-		if !validKeyLengths.contains(keyLength) {
-			throw AESError.KeyError("Invalid key length", keyLength)
-		}
-		let ivSize = kCCBlockSizeAES128
-		let cryptLength = size_t(ivSize + data.count + kCCBlockSizeAES128)
-		var cryptData = Data(count:cryptLength)
-		
-		let status = cryptData.withUnsafeMutableBytes {
-			(ivBytes) in
-			SecRandomCopyBytes(kSecRandomDefault, kCCBlockSizeAES128, ivBytes)
-		}
-		if (status != 0) {
-			throw AESError.IVError("IV generation failed", Int(status))
-		}
+	func aesCrypt(keyData: Data, ivData: Data, operation: Int) -> Data? {
+		let dataLength 	= self.count
+		let cryptLength = size_t(dataLength + kCCBlockSizeAES128)
+		var cryptData 	= Data(count:cryptLength)
+		let keyLength 	= size_t(kCCKeySizeAES128)
+		let options 	= CCOptions(kCCOptionPKCS7Padding)
 		var numBytesEncrypted: size_t = 0
-		let options = CCOptions(kCCOptionPKCS7Padding)
 		
 		let cryptStatus = cryptData.withUnsafeMutableBytes {
-			(cryptBytes) in
-			data.withUnsafeBytes {
-				(dataBytes) in
-				keyData.withUnsafeBytes {
-					(keyBytes) in
-					CCCrypt(CCOperation(kCCEncrypt),
-							CCAlgorithm(kCCAlgorithmAES),
-							options,
-							keyBytes, keyLength,
-							cryptBytes,
-							dataBytes, data.count,
-							cryptBytes + kCCBlockSizeAES128, cryptLength,
-							&numBytesEncrypted)
+			cryptBytes in
+			self.withUnsafeBytes {dataBytes in
+				ivData.withUnsafeBytes {ivBytes in
+					keyData.withUnsafeBytes {keyBytes in
+						CCCrypt(CCOperation(operation),
+								CCAlgorithm(kCCAlgorithmAES),
+								options,
+								keyBytes, keyLength,
+								ivBytes,
+								dataBytes, dataLength,
+								cryptBytes, cryptLength,
+								&numBytesEncrypted)
+					}
 				}
 			}
 		}
 		if UInt32(cryptStatus) == UInt32(kCCSuccess) {
-			cryptData.count = numBytesEncrypted + ivSize
+			cryptData.removeSubrange(numBytesEncrypted..<cryptData.count)
+			return cryptData
 		}
 		else {
-			throw AESError.CryptorError("Encryption failed", Int(cryptStatus))
+			print("Error: \(cryptStatus)")
+			return nil
 		}
-		return cryptData;
-	}
-	
-	
-	
-	// The iv is prefixed to the encrypted data
-	public static func aesCBCDecrypt(data: Data, keyData: Data) throws -> Data? {
-		let keyLength = keyData.count
-		let validKeyLengths = [kCCKeySizeAES128, kCCKeySizeAES192, kCCKeySizeAES256]
-		if !validKeyLengths.contains(keyLength) {
-			throw AESError.KeyError("Invalid key length", keyLength)
-		}
-		let ivSize = kCCBlockSizeAES128
-		let clearLength = size_t(data.count - ivSize)
-		var clearData = Data(count: clearLength)
-		
-		var numBytesDecrypted: size_t = 0
-		let options = CCOptions(kCCOptionPKCS7Padding)
-		
-		let cryptStatus = clearData.withUnsafeMutableBytes {
-			(cryptBytes) in
-			data.withUnsafeBytes {
-				(dataBytes) in
-				keyData.withUnsafeBytes {
-					(keyBytes) in
-					CCCrypt(CCOperation(kCCDecrypt),
-							CCAlgorithm(kCCAlgorithmAES128),
-							options,
-							keyBytes, keyLength,
-							dataBytes,
-							dataBytes + kCCBlockSizeAES128, clearLength,
-							cryptBytes, clearLength,
-							&numBytesDecrypted)
-				}
-			}
-		}
-		if UInt32(cryptStatus) == UInt32(kCCSuccess) {
-			clearData.count = numBytesDecrypted
-		}
-		else {
-			throw AESError.CryptorError("Decryption failed", Int(cryptStatus))
-		}
-		return clearData
 	}
 	
 }
-
-
-enum AESError: Error {
-	case KeyError(String, Int)
-	case IVError(String, Int)
-	case CryptorError(String, Int)
-}
-
-
-
-
 
 
 
