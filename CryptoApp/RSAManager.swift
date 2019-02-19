@@ -8,7 +8,10 @@
 //  linkedin.com/pulse/ios-10-how-use-secure-enclave-touch-id-protect-your-keys-satyam-tyagi/
 
 import Foundation
-import CommonCrypto
+#if swift(>=4.2)
+	import CommonCrypto
+#endif
+
 
 enum DescriptionIdentifier: String {
 	case publicDescr = "----- PUBLIC KEY -----"

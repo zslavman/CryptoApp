@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import CommonCrypto
+//import CommonCrypto
 
 class ViewController: UIViewController {
 
