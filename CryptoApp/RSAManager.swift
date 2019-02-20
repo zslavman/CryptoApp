@@ -42,7 +42,7 @@ class RSAManager {
 	*/
 	// private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1 				// works lower 224 bytes only
 	// private static let secKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1AESGCM 		// GOOG for all sizes
-	private static let cryptoSecKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA256AESGCM	// GOOD for all sizes
+	private static let cryptoSecKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1			// GOOD for all sizes
 	private static let signSecKeyAlgorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
 	private static let keySizeRSA = 2048
 	private static let keySizeEC = 256

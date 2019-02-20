@@ -14,10 +14,14 @@ class ViewController: UIViewController {
 	@IBOutlet weak var inp_Field: UITextView!
 	@IBOutlet weak var out_Field: UITextView!
 	@IBOutlet weak var segmentedControl: UISegmentedControl!
+	@IBOutlet weak var encryptBttn: UIButton!
+	@IBOutlet weak var decryptBttn: UIButton!
 	private let keyData = "1234567890123456".data(using: .utf8)! 		// 16 bytes for AES128
 	
 	
-	override func viewDidLoad() {
+	
+	
+	override func viewDidLoad(){
 		super.viewDidLoad()
 		view.backgroundColor = #colorLiteral(red: 0.4620226622, green: 0.8382837176, blue: 1, alpha: 1)
 		navigationItem.title = "Crypto Tests"
@@ -26,9 +30,20 @@ class ViewController: UIViewController {
 		
 		view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(onBackingClick)))
 		inp_Field.text = "123"
+		configureUI()
 	}
 	
 	
+	private func configureUI(){
+		inp_Field.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+		out_Field.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+		let elements = [inp_Field, out_Field, encryptBttn, decryptBttn]
+		elements.forEach {
+			(element) in
+			element?.layer.cornerRadius = 12
+			element?.clipsToBounds = true
+		}
+	}
 	
 	
 	@objc private func onBackingClick(){

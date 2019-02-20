@@ -68,10 +68,10 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="w00-Ab-x0f">
-                                <rect key="frame" x="133" y="261" width="109" height="29"/>
+                                <rect key="frame" x="136" y="261" width="103" height="29"/>
                                 <segments>
-                                    <segment title="  RSA  "/>
-                                    <segment title="  AES  "/>
+                                    <segment title=" RSA  "/>
+                                    <segment title="AES  "/>
                                 </segments>
                                 <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </segmentedControl>
@@ -94,6 +94,8 @@
                     </view>
                     <navigationItem key="navigationItem" id="jG7-NJ-n8m"/>
                     <connections>
+                        <outlet property="decryptBttn" destination="PnJ-eU-4mx" id="Dba-WT-Ke3"/>
+                        <outlet property="encryptBttn" destination="9t6-W7-aug" id="3Yd-AT-tX5"/>
                         <outlet property="inp_Field" destination="xcR-Bv-gL2" id="Kf0-iK-0dh"/>
                         <outlet property="out_Field" destination="y9p-mO-Rp7" id="bYS-de-Nwn"/>
                         <outlet property="segmentedControl" destination="w00-Ab-x0f" id="PxN-zu-7ZP"/>
