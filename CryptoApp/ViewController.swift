@@ -66,40 +66,49 @@ class ViewController: UIViewController {
 	
 	@IBAction private func onEncryptClick(sender: UIButton) {
 		guard !inp_Field.text.isEmpty, let str = inp_Field.text else { return }
-		//----------------- RSA-SKCS-1 -----------------
-		if segmentedControl.selectedSegmentIndex == 0 {
-			guard let rsaKeyData = RSAManager.getKeyData(withTag: .accountKey, access: .publicA) else { return }
-			guard let encryptedData = RSAManager.encryptWithDataKey(data: str.data(using: String.Encoding.utf8)!,
-																	rsaPublicKeyData: rsaKeyData) else { return }
-			print("Successfully encrypted, length: \(encryptedData.count) bytes")
-			out_Field.text = encryptedData.base64EncodedString()
-		}
-		//----------------- AES-CBC -----------------
-		else {
-			guard let strData = str.data(using: .utf8) else { return }
-			guard let cryptedData = RSAManager.encryptAES_CBC(data: strData, keyData: keyData) else { return }
-			out_Field.text = cryptedData.base64EncodedString()
-		}
+//		//----------------- RSA-SKCS-1 -----------------
+//		if segmentedControl.selectedSegmentIndex == 0 {
+//			guard let rsaKeyData = RSAManager.getKeyData(withTag: .accountKey, access: .publicA) else { return }
+//			guard let encryptedData = RSAManager.encryptWithDataKey(data: str.data(using: String.Encoding.utf8)!,
+//																	rsaPublicKeyData: rsaKeyData) else { return }
+//			print("Successfully encrypted, length: \(encryptedData.count) bytes")
+//			out_Field.text = encryptedData.base64EncodedString()
+//		}
+//		//----------------- AES-CBC -----------------
+//		else {
+//			guard let strData = str.data(using: .utf8) else { return }
+//			guard let cryptedData = RSAManager.encryptAES_CBC(data: strData, keyData: keyData) else { return }
+//			out_Field.text = cryptedData.base64EncodedString()
+//		}
+		let dataKey = str.data(using: .utf8)!
+		print(dataKey)
+		KeyChain.writeKey(sessionID: "123456", dataKey: dataKey)
+		
+		
 	}
 	
 	
 	@IBAction private func onDecryptClick(sender: UIButton) {
-		guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
-		//----------------- RSA-SKCS-1 -----------------
-		if segmentedControl.selectedSegmentIndex == 0 {
-			guard let decryptedData = RSAManager.decrypt(str: str) else { return }
-			guard let decryptedString = String(data: decryptedData, encoding: String.Encoding.utf8) else {
-				print("Decrypt error: could't get string")
-				return
-			}
-			out_Field.text = decryptedString
+		//guard !out_Field.text.isEmpty, let str = out_Field.text else { return }
+//		//----------------- RSA-SKCS-1 -----------------
+//		if segmentedControl.selectedSegmentIndex == 0 {
+//			guard let decryptedData = RSAManager.decrypt(str: str) else { return }
+//			guard let decryptedString = String(data: decryptedData, encoding: String.Encoding.utf8) else {
+//				print("Decrypt error: could't get string")
+//				return
+//			}
+//			out_Field.text = decryptedString
+//		}
+//		//----------------- AES-CBC -----------------
+//		else {
+//			guard let cryptedData = Data(base64Encoded: str) else { return } 	// VERY IMPORTANT to encode using this method!
+//			guard let decryptedData = RSAManager.decryptAES_CBC(data: cryptedData, keyData: keyData) else { return }
+//			out_Field.text = String(data: decryptedData, encoding: .utf8) 		// VERY IMPORTANT to encode using this method!
+//		}
+		if let loadedKey = KeyChain.readKey(sessionID: "123456"){
+			out_Field.text = String(data: loadedKey, encoding: .utf8)
 		}
-		//----------------- AES-CBC -----------------
-		else {
-			guard let cryptedData = Data(base64Encoded: str) else { return } 	// VERY IMPORTANT to encode using this method!
-			guard let decryptedData = RSAManager.decryptAES_CBC(data: cryptedData, keyData: keyData) else { return }
-			out_Field.text = String(data: decryptedData, encoding: .utf8) 		// VERY IMPORTANT to encode using this method!
-		}
+		
 	}
 	
 
