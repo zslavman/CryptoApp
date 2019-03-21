@@ -10,75 +10,91 @@ import Foundation
 class KeyChain {
 	
 	
-	private static func keychainQuery(service: String,
-									  account: String,
-									  accessGroup: String) -> [NSObject: AnyObject] {
+	
+	public static func readKey(sessionID: String) -> Data? {
+		var query = createQuery(service: sessionID)
+		query[kSecMatchLimit] 		= kSecMatchLimitOne
+		query[kSecReturnAttributes] = kCFBooleanTrue
+		query[kSecReturnData] 		= kCFBooleanTrue
+		
+		// Try to fetch the existing keychain item that matches the query
+		var queryResult: AnyObject?
+		let status = withUnsafeMutablePointer(to: &queryResult) {
+			SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0))
+		}
+		// Check the return status
+		guard status != errSecItemNotFound else {
+			print("KeyChain reading error - no password found")
+			return nil
+		}
+		guard status == noErr else {
+			print("KeyChain reading error with status \(status)")
+			return nil
+		}
+		// Parse the password string from the query result
+		if let existingItem = queryResult as? [String: AnyObject]{
+			let dataKey = existingItem[kSecValueData as String] as? Data
+			// let version = existingItem[kSecAttrLabel as String] as? String
+			print("KeyChain reading sucess")
+			return dataKey
+		}
+		else {
+			print("KeyChain reading error - unexpected password data!")
+			return nil
+		}
+	}
+	
+	
+	
+	public static func saveKey(sessionID: String, dataKey: Data) {
+		var query = createQuery(service: sessionID)
+		
+		// Check for an existing item in the keychain
+		if keyIsExists(sessionID: sessionID) {
+			// Update the existing item with the new data
+			let attributesToUpdate: [NSObject: Any] = [
+				kSecValueData : dataKey
+			]
+			let status = SecItemUpdate(query as CFDictionary, attributesToUpdate as CFDictionary)
+			if status != noErr {
+				print("KeyChain saving error with status \(status)")
+			}
+			else {
+				print("KeyChain update success!")
+			}
+		}
+		// If no keyitem found
+		else {
+			// Add a the new item to the keychain
+			query[kSecValueData] = dataKey
+			let status = SecItemAdd(query as CFDictionary, nil)
+			if status != noErr {
+				print("KeyChain saving error with status \(status)")
+			}
+			else {
+				print("KeyChain saving success!")
+			}
+		}
+	}
+	
+	
+	private static func createQuery(service: String) -> [NSObject: Any] {
+		let account 	= "asq12158988"
+		let prefix 		= "LC7P3687MC"
+		let accessGroup = "\(prefix).com.CryptoApp7718"
+		let version 	= "12"
+		
 		let query: [NSObject: Any] = [
 			kSecClass 			: kSecClassGenericPassword,
 			kSecAttrService 	: service,
 			kSecAttrAccount		: account,
-			kSecAttrAccessGroup	: accessGroup
-		]
-		return query as [NSObject: AnyObject]
-	}
-	
-	
-	
-	
-	
-	// ------------------------------------------------------------
-	
-	public static func readKey(sessionID: String) -> Data? {
-		let query = createQuery(sessionID: sessionID)
-		
-		var data: AnyObject?
-		let status = SecItemCopyMatching(query as CFDictionary, &data)
-//		let status = withUnsafeMutablePointer(to: &data) {
-//			SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0))
-//		}
-		if status == errSecSuccess {
-			let receivedKey = data as! Data
-			print("receivedKey = ", String(data: receivedKey, encoding: .utf8)!)
-			return receivedKey
-		}
-		print("Error \(status) key for session '\(sessionID)' not found!")
-		return nil
-	}
-	
-	
-	public static func writeKey(sessionID: String, dataKey: Data) {
-		var query = createQuery(sessionID: sessionID)
-		//deleteKey(sessionID: sessionID)
-		query[kSecValueData] = dataKey
-		// To enable Keychain Sharing, select a Development Team to use for provisioning
-		let result = SecItemAdd(query as CFDictionary, nil)
-		if (result != noErr && result != errSecDuplicateItem) {
-			print("Error, can't add key to keychain, status \(result)")
-		}
-		else {
-			print("Succesfully add new key")
-		}
-	}
-	
-	
-	private static func createQuery(sessionID: String) -> [NSObject: Any] {
-		let email 		= "22golcom" //TODO: get email from userPayload
-		let prefix		= ""
-//		let accessGroup = "\(prefix).CryptoAppKeyChainGroup1"// com.CryptoApp7718
-		let accessGroup = "\(prefix).com.CryptoApp7718"
-		let version 	= "18"
-		
-		let query: [NSObject: Any] = [
-//			kSecAttrService 	: sessionID,
-			kSecAttrAccount 	: email,
-			kSecAttrAccessGroup : accessGroup,
-//			kSecAttrLabel		: version,
-			kSecClass 			: kSecClassGenericPassword,
-			kSecMatchLimit		: kSecMatchLimitOne,
-			kSecReturnAttributes: kCFBooleanTrue,
-//			kSecReturnData 		: kCFBooleanTrue,
-			kSecAttrAccessible	: kSecAttrAccessibleAlways,
-//			kSecAttrAccessible	: kSecAttrAccessibleAlwaysThisDeviceOnly,
+			kSecAttrAccessGroup	: accessGroup,
+			kSecAttrLabel		: version,
+			//kSecMatchLimit	: kSecMatchLimitOne,
+			//kSecReturnAttributes: kCFBooleanTrue,
+			//kSecReturnData 		: kCFBooleanTrue,
+			//kSecAttrAccessible	: kSecAttrAccessibleAlways,
+			//kSecAttrAccessible	: kSecAttrAccessibleAlwaysThisDeviceOnly,
 		]
 		return query
 	}
@@ -91,7 +107,7 @@ class KeyChain {
 	
 	
 	private static func deleteKey(sessionID: String) {
-		let query = createQuery(sessionID: sessionID)
+		let query = createQuery(service: sessionID)
 		let resultCodeDelete = SecItemDelete(query as CFDictionary)
 		
 		if resultCodeDelete != noErr {
@@ -100,5 +116,6 @@ class KeyChain {
 		}
 		print("Key successfully deleted!")
 	}
+	
 	
 }

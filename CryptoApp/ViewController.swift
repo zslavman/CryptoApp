@@ -81,10 +81,7 @@ class ViewController: UIViewController {
 //			out_Field.text = cryptedData.base64EncodedString()
 //		}
 		let dataKey = str.data(using: .utf8)!
-		print(dataKey)
-		KeyChain.writeKey(sessionID: "123456", dataKey: dataKey)
-		
-		
+		KeyChain.saveKey(sessionID: "123456", dataKey: dataKey)
 	}
 	
 	
@@ -108,7 +105,6 @@ class ViewController: UIViewController {
 		if let loadedKey = KeyChain.readKey(sessionID: "123456"){
 			out_Field.text = String(data: loadedKey, encoding: .utf8)
 		}
-		
 	}
 	
 
