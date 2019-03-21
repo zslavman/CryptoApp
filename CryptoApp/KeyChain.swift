@@ -10,6 +10,24 @@ import Foundation
 class KeyChain {
 	
 	
+	private static func keychainQuery(service: String,
+									  account: String,
+									  accessGroup: String) -> [NSObject: AnyObject] {
+		let query: [NSObject: Any] = [
+			kSecClass 			: kSecClassGenericPassword,
+			kSecAttrService 	: service,
+			kSecAttrAccount		: account,
+			kSecAttrAccessGroup	: accessGroup
+		]
+		return query as [NSObject: AnyObject]
+	}
+	
+	
+	
+	
+	
+	// ------------------------------------------------------------
+	
 	public static func readKey(sessionID: String) -> Data? {
 		let query = createQuery(sessionID: sessionID)
 		
