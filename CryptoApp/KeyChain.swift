@@ -9,7 +9,8 @@ import Foundation
 
 class KeyChain {
 	
-	
+	public static let accessGroup = "LC7P3687MC.com.CryptoApp7718"
+	public static let accountName = "drgth6678"
 	
 	public static func readKey(sessionID: String) -> Data? {
 		var query = createQuery(service: sessionID)
@@ -24,7 +25,7 @@ class KeyChain {
 		}
 		// Check the return status
 		guard status != errSecItemNotFound else {
-			print("KeyChain reading error - no password found")
+			//print("KeyChain reading error - no keyitem found")
 			return nil
 		}
 		guard status == noErr else {
@@ -46,14 +47,15 @@ class KeyChain {
 	
 	
 	
-	public static func saveKey(sessionID: String, dataKey: Data) {
+	public static func saveKey(sessionID: String, dataKey: Data, ver: Int32 = 0) {
 		var query = createQuery(service: sessionID)
 		
 		// Check for an existing item in the keychain
 		if keyIsExists(sessionID: sessionID) {
 			// Update the existing item with the new data
 			let attributesToUpdate: [NSObject: Any] = [
-				kSecValueData : dataKey
+				kSecValueData 		: dataKey,
+				kSecAttrLabel 		: String(ver)
 			]
 			let status = SecItemUpdate(query as CFDictionary, attributesToUpdate as CFDictionary)
 			if status != noErr {
@@ -63,10 +65,11 @@ class KeyChain {
 				print("KeyChain update success!")
 			}
 		}
-		// If no keyitem found
+			// If no keyitem found
 		else {
 			// Add a the new item to the keychain
-			query[kSecValueData] = dataKey
+			query[kSecValueData] 		= dataKey
+			query[kSecAttrAccessible] 	= kSecAttrAccessibleAlways
 			let status = SecItemAdd(query as CFDictionary, nil)
 			if status != noErr {
 				print("KeyChain saving error with status \(status)")
@@ -79,21 +82,13 @@ class KeyChain {
 	
 	
 	private static func createQuery(service: String) -> [NSObject: Any] {
-		let account 	= "asq12158988"
-		let prefix 		= "LC7P3687MC"
-		let accessGroup = "\(prefix).com.CryptoApp7718"
-		let version 	= "12"
-		
 		let query: [NSObject: Any] = [
 			kSecClass 			: kSecClassGenericPassword,
 			kSecAttrService 	: service,
-			kSecAttrAccount		: account,
+			kSecAttrAccount		: accountName,
 			kSecAttrAccessGroup	: accessGroup,
-			kSecAttrLabel		: version,
-			//kSecMatchLimit	: kSecMatchLimitOne,
 			//kSecReturnAttributes: kCFBooleanTrue,
 			//kSecReturnData 		: kCFBooleanTrue,
-			//kSecAttrAccessible	: kSecAttrAccessibleAlways,
 			//kSecAttrAccessible	: kSecAttrAccessibleAlwaysThisDeviceOnly,
 		]
 		return query

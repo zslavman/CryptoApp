@@ -51,16 +51,16 @@ class ViewController: UIViewController {
 	}
 	
 	@objc private func onLeftClick(){
-		if RSAManager.isKeyPairExists(withTag: .accountKey) {
+		if Cipher.isKeyPairExists(withTag: .accountKey) {
 			print("Already have keys")
 			return
 		}
-		RSAManager.generatePairRSA(withTag: .accountKey)
+		Cipher.generatePair_RSA(withTag: .accountKey)
 	}
 	
 	
 	@objc private func onRightClick(){
-		RSAManager.deleteSecureKeyPair(withTag: .accountKey, nil)
+		Cipher.deleteSecureKeyPair(withTag: .accountKey)
 	}
 	
 	

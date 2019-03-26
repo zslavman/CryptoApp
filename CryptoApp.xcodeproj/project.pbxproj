@@ -12,7 +12,7 @@
 		CE4844C62217117800A37A53 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE4844C42217117800A37A53 /* Main.storyboard */; };
 		CE4844C82217117900A37A53 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE4844C72217117900A37A53 /* Assets.xcassets */; };
 		CE4844CB2217117900A37A53 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE4844C92217117900A37A53 /* LaunchScreen.storyboard */; };
-		CE4844D42217140C00A37A53 /* RSAManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4844D22217140C00A37A53 /* RSAManager.swift */; };
+		CE4844D42217140C00A37A53 /* Cipher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4844D22217140C00A37A53 /* Cipher.swift */; };
 		CE4844D52217140C00A37A53 /* UtilsRSA.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4844D32217140C00A37A53 /* UtilsRSA.swift */; };
 		CEBB645522438B0F008FE67F /* KeyChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBB645422438B0F008FE67F /* KeyChain.swift */; };
 /* End PBXBuildFile section */
@@ -25,7 +25,7 @@
 		CE4844C72217117900A37A53 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CE4844CA2217117900A37A53 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CE4844CC2217117900A37A53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CE4844D22217140C00A37A53 /* RSAManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RSAManager.swift; sourceTree = "<group>"; };
+		CE4844D22217140C00A37A53 /* Cipher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Cipher.swift; sourceTree = "<group>"; };
 		CE4844D32217140C00A37A53 /* UtilsRSA.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsRSA.swift; sourceTree = "<group>"; };
 		CEBB645422438B0F008FE67F /* KeyChain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyChain.swift; sourceTree = "<group>"; };
 		CED9CA872243B6B300ED0095 /* CryptoApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CryptoApp.entitlements; sourceTree = "<group>"; };
@@ -64,7 +64,7 @@
 				CED9CA872243B6B300ED0095 /* CryptoApp.entitlements */,
 				CEBB645422438B0F008FE67F /* KeyChain.swift */,
 				CE4844C22217117800A37A53 /* ViewController.swift */,
-				CE4844D22217140C00A37A53 /* RSAManager.swift */,
+				CE4844D22217140C00A37A53 /* Cipher.swift */,
 				CE4844D32217140C00A37A53 /* UtilsRSA.swift */,
 				CE4844C02217117800A37A53 /* AppDelegate.swift */,
 				CE4844C42217117800A37A53 /* Main.storyboard */,
@@ -154,7 +154,7 @@
 				CE4844D52217140C00A37A53 /* UtilsRSA.swift in Sources */,
 				CE4844C32217117800A37A53 /* ViewController.swift in Sources */,
 				CEBB645522438B0F008FE67F /* KeyChain.swift in Sources */,
-				CE4844D42217140C00A37A53 /* RSAManager.swift in Sources */,
+				CE4844D42217140C00A37A53 /* Cipher.swift in Sources */,
 				CE4844C12217117800A37A53 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
