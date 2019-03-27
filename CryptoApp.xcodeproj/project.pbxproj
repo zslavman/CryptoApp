@@ -63,8 +63,8 @@
 			children = (
 				CED9CA872243B6B300ED0095 /* CryptoApp.entitlements */,
 				CEBB645422438B0F008FE67F /* KeyChain.swift */,
-				CE4844C22217117800A37A53 /* ViewController.swift */,
 				CE4844D22217140C00A37A53 /* Cipher.swift */,
+				CE4844C22217117800A37A53 /* ViewController.swift */,
 				CE4844D32217140C00A37A53 /* UtilsRSA.swift */,
 				CE4844C02217117800A37A53 /* AppDelegate.swift */,
 				CE4844C42217117800A37A53 /* Main.storyboard */,
@@ -304,7 +304,7 @@
 				CODE_SIGN_ENTITLEMENTS = CryptoApp/CryptoApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = LC7P3687MC;
+				DEVELOPMENT_TEAM = 8RTU5H2QPQ;
 				INFOPLIST_FILE = CryptoApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -327,7 +327,7 @@
 				CODE_SIGN_ENTITLEMENTS = CryptoApp/CryptoApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = LC7P3687MC;
+				DEVELOPMENT_TEAM = 8RTU5H2QPQ;
 				INFOPLIST_FILE = CryptoApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (

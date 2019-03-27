@@ -21,6 +21,9 @@ enum AccessIdentif {
 	case publicA
 	case privateA
 }
+enum ReadQuery {
+	case getCurrentPrivate
+}
 
 struct KeyPairRSA {
 	let privateSecKey: SecKey
@@ -64,17 +67,17 @@ class Cipher {
 	*/
 	@discardableResult
 	public static func generatePair_RSA(withTag: KeyTag) -> KeyPairRSA? {
-		deleteSecureKeyPair(withTag: withTag)
+		//deleteSecureKeyPair(withTag: withTag)
 		
 		let publicKeyAttr: [NSObject: Any] = [
 			//kSecAttrIsPermanent		: true, // store in keychain
-			kSecAttrApplicationTag	: withTag.rawValue.data(using: String.Encoding.utf8)!,
+//			kSecAttrApplicationTag	: withTag.rawValue.data(using: String.Encoding.utf8)!,
 			kSecClass				: kSecClassKey,
 			kSecReturnData			: true
 		]
 		let privateKeyAttr: [NSObject: Any] = [
 			//kSecAttrIsPermanent		: true,
-			kSecAttrApplicationTag	: withTag.rawValue.data(using: String.Encoding.utf8)!,
+//			kSecAttrApplicationTag	: withTag.rawValue.data(using: String.Encoding.utf8)!,
 			kSecClass				: kSecClassKey,
 			kSecReturnData			: true
 		]
@@ -361,8 +364,8 @@ class Cipher {
 	public static func deleteSecureKeyPair(withTag: KeyTag) {
 		let deleteQuery: [NSObject : Any] = [
 			kSecClass				: kSecClassKey,
-			kSecAttrApplicationTag 	: withTag.rawValue,
-			]
+			kSecAttrKeyType 		: kSecAttrKeyTypeRSA,
+		]
 		let status = SecItemDelete(deleteQuery as CFDictionary)
 		if status == errSecSuccess {
 			print("Keys with tag \(withTag.rawValue) successfully deleted!")
@@ -391,35 +394,6 @@ class Cipher {
 			return nil
 		}
 		return Cipher.getSecKeyFromKeychain(withTag: tagName, access: .privateA)
-	}
-	
-	
-	public static func savePairRSAtoKeychain(keys: KeyPairRSA, tagName: KeyTag, ver: Int32) {
-		let commonQuery: [NSObject : Any] = [
-			kSecClass            	: kSecClassKey,
-			kSecAttrKeyType      	: kSecAttrKeyTypeRSA,
-			kSecReturnPersistentRef	: false,
-			kSecAttrAccessGroup		: KeyChain.accessGroup,
-			//			kSecAttrApplicationTag 	: tagName.rawValue.data(using: String.Encoding.utf8)!,
-			kSecAttrService 		: tagName.rawValue.data(using: String.Encoding.utf8)!,
-			kSecAttrAccount			: KeyChain.accountName,
-			kSecAttrLabel			: String(currentVerRSA)
-		]
-		var privQuery = commonQuery
-		privQuery[kSecValueData] 	= keys.privateDataKey
-		privQuery[kSecAttrKeyClass] = kSecAttrKeyClassPrivate
-		var pubQuery = commonQuery
-		pubQuery[kSecValueData]		= keys.publicDataKey
-		pubQuery[kSecAttrKeyClass]	= kSecAttrKeyClassPublic
-		
-		let privResult = SecItemAdd(privQuery as CFDictionary, nil)
-		let pubResult = SecItemAdd(pubQuery as CFDictionary, nil)
-		
-		if privResult != errSecSuccess || pubResult != errSecSuccess {
-			print("Error while save KeyPair")
-			return
-		}
-		print("KeyPair successfully saved")
 	}
 	
 	

@@ -30,6 +30,7 @@ class ViewController: UIViewController {
 		
 		view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(onBackingClick)))
 		inp_Field.text = "123"
+		out_Field.text = "john01"
 		configureUI()
 	}
 	
@@ -80,8 +81,15 @@ class ViewController: UIViewController {
 //			guard let cryptedData = RSAManager.encryptAES_CBC(data: strData, keyData: keyData) else { return }
 //			out_Field.text = cryptedData.base64EncodedString()
 //		}
-		let dataKey = str.data(using: .utf8)!
-		KeyChain.saveKey(sessionID: "123456", dataKey: dataKey)
+		
+//		let dataKey = str.data(using: .utf8)!
+//		KeyChain.saveKey(sessionID: "123456", dataKey: dataKey)
+		
+		if let pair = Cipher.generatePair_RSA(withTag: .accountKey) {
+			KeyChain.savePairRSAtoKeychain(keys: pair, tagName: .accountKey, ver: Int32(str)!, accountName: out_Field.text!)
+		}
+		
+		
 	}
 	
 	
@@ -102,9 +110,20 @@ class ViewController: UIViewController {
 //			guard let decryptedData = RSAManager.decryptAES_CBC(data: cryptedData, keyData: keyData) else { return }
 //			out_Field.text = String(data: decryptedData, encoding: .utf8) 		// VERY IMPORTANT to encode using this method!
 //		}
-		if let loadedKey = KeyChain.readKey(sessionID: "123456"){
-			out_Field.text = String(data: loadedKey, encoding: .utf8)
+//		if let loadedKey = KeyChain.readKey(sessionID: "123456"){
+//			out_Field.text = String(data: loadedKey, encoding: .utf8)
+//		}
+		
+//		if let data = Cipher.readRSA(access: .publicA, type: .accountKey) {
+//			print(data)
+//		}
+		if let data2 = KeyChain.readAllprivateRSA() {
+			print(data2)
 		}
+		
+		
+		
+		
 	}
 	
 
