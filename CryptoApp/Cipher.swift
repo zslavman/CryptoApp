@@ -21,9 +21,6 @@ enum AccessIdentif {
 	case publicA
 	case privateA
 }
-enum ReadQuery {
-	case getCurrentPrivate
-}
 
 struct KeyPairRSA {
 	let privateSecKey: SecKey
@@ -45,39 +42,26 @@ class Cipher {
 	private static let cryptoSecKeyAlgorithm = SecKeyAlgorithm.rsaEncryptionOAEPSHA1 // works lower then 224 bytes only
 	public static let suiteName = "group.com.teamyIntermodules"
 	private static let defaults = UserDefaults(suiteName: suiteName)!
-	public static var currentVerRSA: Int32 {
-		get {
-			if let ver = defaults.value(forKey: "currentVerRSA") as? Int32 {
-				return ver
-			}
-			return 0
-		}
-		set{
-			defaults.set(newValue, forKey: "currentVerRSA")
-			defaults.synchronize()
-		}
-	}
+
 	
 	//MARK:- RSA Key-pair Generation methods
 	
 	/*
-	* Most proper native key-pair creation with save into persistent store
-	* If you already have key for certain tag - generatePair_RSA method will
-	* return old key data
+	* Most proper native key-pair creation
 	*/
 	@discardableResult
 	public static func generatePair_RSA(withTag: KeyTag) -> KeyPairRSA? {
 		//deleteSecureKeyPair(withTag: withTag)
 		
 		let publicKeyAttr: [NSObject: Any] = [
-			//kSecAttrIsPermanent		: true, // store in keychain
-//			kSecAttrApplicationTag	: withTag.rawValue.data(using: String.Encoding.utf8)!,
+			//kSecAttrIsPermanent	: true, // store in keychain
+			//kSecAttrApplicationTag: withTag.rawValue.data(using: String.Encoding.utf8)!,
 			kSecClass				: kSecClassKey,
 			kSecReturnData			: true
 		]
 		let privateKeyAttr: [NSObject: Any] = [
-			//kSecAttrIsPermanent		: true,
-//			kSecAttrApplicationTag	: withTag.rawValue.data(using: String.Encoding.utf8)!,
+			//kSecAttrIsPermanent	: true,
+			//kSecAttrApplicationTag: withTag.rawValue.data(using: String.Encoding.utf8)!,
 			kSecClass				: kSecClassKey,
 			kSecReturnData			: true
 		]
@@ -99,14 +83,6 @@ class Cipher {
 		guard let pubKey = pubSecKey, let privKey = privSecKey else { return nil }
 		let pair = KeyPairRSA(privateSecKey: privKey, publicSecKey: pubKey)
 		return pair
-		//		// convert SecKey -> Data
-		//		guard let pubKey = pubSecKey, let _ = privSecKey else { return nil }
-		//		if let pubData = convertSecKeyToData(secKey: pubKey){
-		//			print("RSA keys successfully generated!")
-		//			//printKeys()
-		//			return pubData
-		//		}
-		//		return nil
 	}
 	
 	

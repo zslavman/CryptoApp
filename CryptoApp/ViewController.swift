@@ -84,13 +84,16 @@ class ViewController: UIViewController {
 		
 //		let dataKey = str.data(using: .utf8)!
 //		KeyChain.saveKey(sessionID: "123456", dataKey: dataKey)
+//
+//		if let pair = Cipher.generatePair_RSA(withTag: .accountKey) {
+//			KeyChain.savePairRSAtoKeychain(keys: pair, tagName: .accountKey, ver: Int32(str)!, accountName: out_Field.text!)
+//		}
 		
-		if let pair = Cipher.generatePair_RSA(withTag: .accountKey) {
-			KeyChain.savePairRSAtoKeychain(keys: pair, tagName: .accountKey, ver: Int32(str)!, accountName: out_Field.text!)
-		}
-		
-		
+		KeyChain.accountKeyVersion = Int32(str)!
+		out_Field.text = ""
 	}
+	
+	
 	
 	
 	@IBAction private func onDecryptClick(sender: UIButton) {
@@ -117,14 +120,17 @@ class ViewController: UIViewController {
 //		if let data = Cipher.readRSA(access: .publicA, type: .accountKey) {
 //			print(data)
 //		}
-		if let data2 = KeyChain.readAllprivateRSA() {
-			print(data2)
-		}
+//
+//
+//		if let data2 = KeyChain.readAllprivateRSA() {
+//			print("Count of keys = \(data2.count)")
+//			print(data2)
+//		}
 		
-		
-		
-		
+		out_Field.text = KeyChain.accountKeyVersion.description
 	}
+		
+	
 	
 
 }

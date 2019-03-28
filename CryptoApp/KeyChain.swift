@@ -11,9 +11,27 @@ class KeyChain {
 	
 	public static let accessGroup = "8RTU5H2QPQ.com.CryptoApp7718"
 	public static let accountName = "vasya01"
+	public static var accountKeyVersion: Int32 {
+		get {
+			guard let data = readKey(keyName: "currentAccountKeyVersion") else { return -1 }
+			// Data -> Int32
+			let number = data.withUnsafeBytes {
+				(pointer: UnsafePointer<Int32>) -> Int32 in
+				return pointer.pointee // reading 4 bytes of data
+			}
+			return number
+		}
+		set {
+			var newValueCopy = newValue
+			// Int32 -> Data
+			let newData = Data(bytes: &newValueCopy, count: MemoryLayout.size(ofValue: newValueCopy))
+			saveKey(keyName: "currentAccountKeyVersion", dataKey: newData)
+		}
+	}
+
 	
-	public static func readKey(sessionID: String) -> Data? {
-		var query = createQuery(service: sessionID)
+	public static func readKey(keyName: String) -> Data? {
+		var query = createQuery(service: keyName)
 		query[kSecMatchLimit] 		= kSecMatchLimitOne
 		query[kSecReturnAttributes] = kCFBooleanTrue
 		query[kSecReturnData] 		= kCFBooleanTrue
@@ -23,7 +41,6 @@ class KeyChain {
 		let status = withUnsafeMutablePointer(to: &queryResult) {
 			SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0))
 		}
-		// Check the return status
 		guard status != errSecItemNotFound else {
 			//print("KeyChain reading error - no keyitem found")
 			return nil
@@ -32,7 +49,6 @@ class KeyChain {
 			print("KeyChain reading error with status \(status)")
 			return nil
 		}
-		// Parse the password string from the query result
 		if let existingItem = queryResult as? [String: AnyObject]{
 			let dataKey = existingItem[kSecValueData as String] as? Data
 			// let version = existingItem[kSecAttrLabel as String] as? String
@@ -47,11 +63,11 @@ class KeyChain {
 	
 	
 	
-	public static func saveKey(sessionID: String, dataKey: Data, ver: Int32 = 0) {
-		var query = createQuery(service: sessionID)
+	public static func saveKey(keyName: String, dataKey: Data, ver: Int32 = 0) {
+		var query = createQuery(service: keyName)
 		
 		// Check for an existing item in the keychain
-		if keyIsExists(sessionID: sessionID) {
+		if keyIsExists(keyName: keyName) {
 			// Update the existing item with the new data
 			let attributesToUpdate: [NSObject: Any] = [
 				kSecValueData 		: dataKey,
@@ -96,13 +112,13 @@ class KeyChain {
 	
 	
 	
-	public static func keyIsExists(sessionID: String) -> Bool {
-		return readKey(sessionID: sessionID) != nil
+	public static func keyIsExists(keyName: String) -> Bool {
+		return readKey(keyName: keyName) != nil
 	}
 	
 	
-	private static func deleteKey(sessionID: String) {
-		let query = createQuery(service: sessionID)
+	private static func deleteKey(keyName: String) {
+		let query = createQuery(service: keyName)
 		let resultCodeDelete = SecItemDelete(query as CFDictionary)
 		
 		if resultCodeDelete != noErr {
@@ -120,6 +136,7 @@ class KeyChain {
 			kSecAttrKeyType      	: kSecAttrKeyTypeRSA,
 			kSecReturnPersistentRef	: false,
 			kSecAttrAccessGroup		: KeyChain.accessGroup,
+			kSecAttrAccessible 		: kSecAttrAccessibleAlways,
 			kSecAttrApplicationTag 	: (tagName == .accountKey) ? String(ver) : accountName,	// 123  | search atag
 			kSecAttrLabel			: (tagName == .accountKey) ? accountName : "",			// John | search labl
 			kSecAttrApplicationLabel: tagName.rawValue, 									// accountKey	 klbl(binData)
@@ -152,7 +169,7 @@ class KeyChain {
 			kSecReturnData 			: true,					// r_Data
 			kSecMatchLimit 			: kSecMatchLimitOne,
 			kSecAttrKeyClass		: kSecAttrKeyClassPrivate,
-			kSecAttrLabel			: "john01" 		// accauntName
+			kSecAttrLabel			: "john01" 				// accauntName
 		]
 		return query
 	}
