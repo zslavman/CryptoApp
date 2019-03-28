@@ -61,7 +61,8 @@ class ViewController: UIViewController {
 	
 	
 	@objc private func onRightClick(){
-		Cipher.deleteSecureKeyPair(withTag: .accountKey)
+		//Cipher.deleteSecureKeyPair(withTag: .accountKey)
+		KeyChain.deleteCommonSecKeys()
 	}
 	
 	

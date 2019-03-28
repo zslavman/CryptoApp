@@ -212,7 +212,7 @@ class KeyChain {
 	
 	
 	/// Get all private RSA-keys for current account
-	public static func readAllprivateRSA() -> [Int32 : Data]?{
+	public static func readAllprivateRSA() -> [Int32 : Data]? {
 		var query = readQueryRSA()
 		query[kSecMatchLimit] = kSecMatchLimitAll
 		var queryResult: AnyObject?
@@ -243,6 +243,23 @@ class KeyChain {
 		else {
 			print("KeyChain reading error - unexpected password data!")
 			return nil
+		}
+	}
+	
+	public static func deleteCommonSecKeys() {
+		let secItemClasses = [
+			kSecClassGenericPassword,
+			kSecClassInternetPassword,
+			kSecClassCertificate,
+			kSecClassKey,
+			kSecClassIdentity
+		]
+		for secItemClass in secItemClasses {
+			let dictionary = [kSecClass as String:secItemClass]
+			let status = SecItemDelete(dictionary as CFDictionary)
+			if status == errSecSuccess {
+				print("Successfully deletre SecKey for \(secItemClass)")
+			}
 		}
 	}
 	

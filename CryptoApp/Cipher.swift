@@ -178,24 +178,6 @@ class Cipher {
 	
 	//MARK:- other (for RSA)
 	
-	public static func deleteCommonSecKeys() {
-		let secItemClasses = [
-			kSecClassGenericPassword,
-			kSecClassInternetPassword,
-			kSecClassCertificate,
-			kSecClassKey,
-			kSecClassIdentity
-		]
-		for secItemClass in secItemClasses {
-			let dictionary = [kSecClass as String:secItemClass]
-			let status = SecItemDelete(dictionary as CFDictionary)
-			if status == errSecSuccess {
-				print("Successfully deletre SecKey for \(secItemClass)")
-			}
-		}
-	}
-	
-	
 	public static func getSecKeyFromKeychain(withTag: KeyTag, access: AccessIdentif, printExists: Bool = true) -> SecKey? {
 		let parameters:[NSObject : Any]  = [
 			kSecClass				: kSecClassKey,
