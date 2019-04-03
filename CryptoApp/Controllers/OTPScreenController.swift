@@ -23,24 +23,18 @@ class OTPScreenController: UIViewController {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		
-		configureDigits()
+		digits.forEach{$0.delegate = self}
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		digits.forEach{$0.text = ""}
+	}
+	
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
 		dig1.becomeFirstResponder()
 	}
-	
-	private func configureDigits() {
-		digits.forEach {
-			(digit) in
-//			digit.layer.cornerRadius = 4
-			digit.delegate = self
-		}
-	}
-	
 	
 	@IBAction func onMagicLinkClick(_ sender: UIButton) {
 		let plistDictionary = Bundle.main.infoDictionary!
@@ -59,7 +53,6 @@ class OTPScreenController: UIViewController {
 		alertController.addAction(CANCEL_action)
 		present(alertController, animated: true, completion: nil)
 	}
-	
 	
 }
 
@@ -126,7 +119,6 @@ class UnderlinedTextView: UITextView {
 		if offsetY == -1 {
 			offsetY = centerVertically()
 			addUnderline()
-			print(#function)
 		}
 	}
 	
