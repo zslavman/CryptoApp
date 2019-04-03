@@ -37,7 +37,7 @@ class ViewController: UIViewController {
 	
 	
 	private func timerStart(){
-		DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+		DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
 			let storyboard = UIStoryboard(name: "Main", bundle: nil)
 			let vc = storyboard.instantiateViewController(withIdentifier: "OTPScreen") as! OTPScreenController
 			self.present(vc, animated: false, completion: nil)

@@ -2,7 +2,7 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "background_pattern.pdf"
+      "filename" : "approve_back.pdf"
     }
   ],
   "info" : {
@@ -10,7 +10,6 @@
     "author" : "xcode"
   },
   "properties" : {
-    "template-rendering-intent" : "original",
     "preserves-vector-representation" : true
   }
 }

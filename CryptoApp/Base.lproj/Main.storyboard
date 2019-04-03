@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7uo-cs-PDP">
-    <device id="retina4_7" orientation="portrait">
+    <device id="retina5_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
@@ -14,11 +14,11 @@
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="CryptoApp" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="xcR-Bv-gL2">
-                                <rect key="frame" x="37" y="114" width="301" height="128"/>
+                                <rect key="frame" x="37" y="114" width="340" height="128"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="128" id="X2D-98-Ds2"/>
@@ -27,7 +27,7 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9t6-W7-aug">
-                                <rect key="frame" x="37" y="309.5" width="98" height="48"/>
+                                <rect key="frame" x="37" y="344" width="98" height="48"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <constraints>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="98" id="fTR-WA-flf"/>
@@ -42,7 +42,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PnJ-eU-4mx">
-                                <rect key="frame" x="240" y="309.5" width="98" height="48"/>
+                                <rect key="frame" x="279" y="344" width="98" height="48"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="48" id="1FQ-bM-vKs"/>
@@ -57,7 +57,7 @@
                                 </connections>
                             </button>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="y9p-mO-Rp7">
-                                <rect key="frame" x="37" y="371" width="301" height="261"/>
+                                <rect key="frame" x="37" y="440" width="340" height="261"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="261" id="b1d-lG-eAo"/>
@@ -66,7 +66,7 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="w00-Ab-x0f">
-                                <rect key="frame" x="136" y="261" width="103" height="29"/>
+                                <rect key="frame" x="155.66666666666666" y="261" width="102.99999999999997" height="29"/>
                                 <segments>
                                     <segment title=" RSA  "/>
                                     <segment title="AES  "/>
@@ -109,161 +109,135 @@
             <point key="canvasLocation" x="1072.8" y="133.5832083958021"/>
         </scene>
         <!--Screen Controller-->
-        <scene sceneID="JMf-32-usQ">
+        <scene sceneID="7HU-bm-rhu">
             <objects>
-                <viewController storyboardIdentifier="OTPScreen" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Qn4-Jn-4Ha" customClass="OTPScreenController" customModule="CryptoApp" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Rzo-yE-rHk">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                <viewController storyboardIdentifier="OTPScreen" useStoryboardIdentifierAsRestorationIdentifier="YES" id="qAF-wQ-34o" customClass="OTPScreenController" customModule="CryptoApp" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="g4g-Tm-e2t">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="background_pattern" translatesAutoresizingMaskIntoConstraints="NO" id="CVu-hf-obu">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                            <imageView userInteractionEnabled="NO" alpha="0.29999999999999999" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="approve_back" translatesAutoresizingMaskIntoConstraints="NO" id="l1e-Jo-JPY">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                             </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="perimeter_white_v2" translatesAutoresizingMaskIntoConstraints="NO" id="zQl-iP-UOz">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="157"/>
-                            </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fade_left" translatesAutoresizingMaskIntoConstraints="NO" id="tb0-B8-9L2">
-                                <rect key="frame" x="0.0" y="0.0" width="42" height="667"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="42" id="g2E-cy-Fkr"/>
-                                </constraints>
-                            </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fade_right" translatesAutoresizingMaskIntoConstraints="NO" id="IBS-Po-VUI">
-                                <rect key="frame" x="333" y="0.0" width="42" height="667"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="42" id="5kQ-26-3TC"/>
-                                </constraints>
-                            </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fade_top" translatesAutoresizingMaskIntoConstraints="NO" id="K46-s0-d1g">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="42"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="42" id="K5R-iE-8HZ"/>
-                                    <constraint firstAttribute="height" constant="42" id="rDU-pz-LQC"/>
-                                </constraints>
-                            </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fade_bottom" translatesAutoresizingMaskIntoConstraints="NO" id="R0v-we-2ys">
-                                <rect key="frame" x="0.0" y="625" width="375" height="42"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="42" id="UEc-Te-hgH"/>
-                                </constraints>
-                            </imageView>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="rd5-tV-VQT">
-                                <rect key="frame" x="13.5" y="172" width="348" height="56"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="tZV-GC-tpC">
+                                <rect key="frame" x="20.666666666666657" y="207" width="372.66666666666674" height="64.666666666666686"/>
                                 <subviews>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="9pN-7q-yKt">
-                                        <rect key="frame" x="0.0" y="0.0" width="48" height="56"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="kbj-cZ-s4T" customClass="UnderlinedTextView" customModule="CryptoApp" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="55.333333333333336" height="64.666666666666671"/>
                                         <color key="backgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.94901960780000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="48" id="GPj-HA-fwX"/>
-                                            <constraint firstAttribute="height" constant="56" id="rFT-QB-Dr0"/>
+                                            <constraint firstAttribute="width" secondItem="kbj-cZ-s4T" secondAttribute="height" multiplier="6:7" id="ooM-QL-QT4"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="26"/>
+                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="23"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad"/>
                                     </textView>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="qhi-Fi-FZG">
-                                        <rect key="frame" x="60" y="0.0" width="48" height="56"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="D92-z1-bnF" customClass="UnderlinedTextView" customModule="CryptoApp" customModuleProvider="target">
+                                        <rect key="frame" x="63.333333333333329" y="0.0" width="55.666666666666671" height="64.666666666666671"/>
                                         <color key="backgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.94901960780000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="56" id="NTT-S6-zsj"/>
-                                            <constraint firstAttribute="width" constant="48" id="q0C-H2-hbh"/>
+                                            <constraint firstAttribute="width" secondItem="D92-z1-bnF" secondAttribute="height" multiplier="6:7" id="4aN-c8-HOW"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="26"/>
+                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="23"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad"/>
                                     </textView>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="F6n-Mq-qTX">
-                                        <rect key="frame" x="120" y="0.0" width="48" height="56"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="dvW-2G-Mhq" customClass="UnderlinedTextView" customModule="CryptoApp" customModuleProvider="target">
+                                        <rect key="frame" x="126.99999999999999" y="0.0" width="55.333333333333329" height="64.666666666666671"/>
                                         <color key="backgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.94901960780000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="56" id="Dmz-YW-qIO"/>
-                                            <constraint firstAttribute="width" constant="48" id="Gab-ER-ZZz"/>
+                                            <constraint firstAttribute="width" secondItem="dvW-2G-Mhq" secondAttribute="height" multiplier="6:7" id="dBT-tu-xoo"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="26"/>
+                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="23"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad"/>
                                     </textView>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="ueR-rg-hkI">
-                                        <rect key="frame" x="180" y="0.0" width="48" height="56"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="M7G-Mt-yWi" customClass="UnderlinedTextView" customModule="CryptoApp" customModuleProvider="target">
+                                        <rect key="frame" x="190.33333333333334" y="0.0" width="55.333333333333343" height="64.666666666666671"/>
                                         <color key="backgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.94901960780000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="48" id="OK3-Xy-w2x"/>
-                                            <constraint firstAttribute="height" constant="56" id="xEI-l9-Bkz"/>
+                                            <constraint firstAttribute="width" secondItem="M7G-Mt-yWi" secondAttribute="height" multiplier="6:7" id="OLg-EY-avU"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="26"/>
+                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="23"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad"/>
                                     </textView>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="IHa-oi-Xgj">
-                                        <rect key="frame" x="240" y="0.0" width="48" height="56"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="LEH-br-u9B" customClass="UnderlinedTextView" customModule="CryptoApp" customModuleProvider="target">
+                                        <rect key="frame" x="253.66666666666666" y="0.0" width="55.666666666666657" height="64.666666666666671"/>
                                         <color key="backgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.94901960780000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="48" id="Hdd-no-sT7"/>
-                                            <constraint firstAttribute="height" constant="56" id="bPa-u2-rwf"/>
+                                            <constraint firstAttribute="width" secondItem="LEH-br-u9B" secondAttribute="height" multiplier="6:7" id="kZO-CW-r7h"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="26"/>
+                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="23"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad"/>
                                     </textView>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="5MH-6n-MX2">
-                                        <rect key="frame" x="300" y="0.0" width="48" height="56"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" text="1" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="eHj-nY-L6v" customClass="UnderlinedTextView" customModule="CryptoApp" customModuleProvider="target">
+                                        <rect key="frame" x="317.33333333333331" y="0.0" width="55.333333333333314" height="64.666666666666671"/>
                                         <color key="backgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.94901960780000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="56" id="0PB-A4-ACj"/>
-                                            <constraint firstAttribute="width" constant="48" id="e0q-1l-c0x"/>
+                                            <constraint firstAttribute="width" secondItem="eHj-nY-L6v" secondAttribute="height" multiplier="6:7" id="tGC-HH-ZOl"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="26"/>
+                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="23"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad"/>
                                     </textView>
                                 </subviews>
                             </stackView>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="We've sent the code to the Teamy app on your other device. Please enter the code below." textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="aef-Yw-4qQ">
-                                <rect key="frame" x="33" y="108" width="309" height="50"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wdN-h3-Xyb">
+                                <rect key="frame" x="92" y="353" width="230" height="30"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="Send me a magic link to the email"/>
+                                <connections>
+                                    <action selector="onMagicLinkClick:" destination="qAF-wQ-34o" eventType="touchUpInside" id="fW1-QD-UjM"/>
+                                </connections>
+                            </button>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="We've sent the code to the Teamy app on your other device. Please enter the code below." textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Rd8-hJ-dpI">
+                                <rect key="frame" x="20.666666666666657" y="130.33333333333334" width="372.66666666666674" height="60"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="AxK-DM-wX4"/>
+                                    <constraint firstAttribute="height" constant="60" id="Ynz-90-dJI"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fade_bottom" translatesAutoresizingMaskIntoConstraints="NO" id="471-Lx-afB">
+                                <rect key="frame" x="0.0" y="684.33333333333337" width="414" height="51.666666666666629"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_small" translatesAutoresizingMaskIntoConstraints="NO" id="YCe-1n-92q">
+                                <rect key="frame" x="165.66666666666666" y="34" width="83" height="24"/>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="zQl-iP-UOz" firstAttribute="height" secondItem="Rzo-yE-rHk" secondAttribute="height" constant="-510" id="0N7-H8-1sJ"/>
-                            <constraint firstItem="tb0-B8-9L2" firstAttribute="bottom" secondItem="DIe-2N-72H" secondAttribute="bottom" id="AxD-13-7pA"/>
-                            <constraint firstItem="aef-Yw-4qQ" firstAttribute="leading" secondItem="DIe-2N-72H" secondAttribute="leading" constant="33" id="C3I-sn-vF8"/>
-                            <constraint firstItem="DIe-2N-72H" firstAttribute="bottom" secondItem="R0v-we-2ys" secondAttribute="bottom" id="EeS-Ks-70u"/>
-                            <constraint firstItem="K46-s0-d1g" firstAttribute="trailing" secondItem="DIe-2N-72H" secondAttribute="trailing" id="Jt1-hA-Jyx"/>
-                            <constraint firstItem="rd5-tV-VQT" firstAttribute="top" secondItem="aef-Yw-4qQ" secondAttribute="bottom" constant="14" id="Nbd-cO-CKn"/>
-                            <constraint firstItem="R0v-we-2ys" firstAttribute="trailing" secondItem="DIe-2N-72H" secondAttribute="trailing" id="OLP-SJ-Mku"/>
-                            <constraint firstItem="CVu-hf-obu" firstAttribute="leading" secondItem="DIe-2N-72H" secondAttribute="leading" id="QIe-bA-Z2l"/>
-                            <constraint firstItem="CVu-hf-obu" firstAttribute="top" secondItem="Rzo-yE-rHk" secondAttribute="top" id="RUc-CY-JFk"/>
-                            <constraint firstItem="zQl-iP-UOz" firstAttribute="trailing" secondItem="DIe-2N-72H" secondAttribute="trailing" id="Tqo-NX-6ic"/>
-                            <constraint firstItem="rd5-tV-VQT" firstAttribute="top" secondItem="DIe-2N-72H" secondAttribute="top" constant="152" id="Tzu-ru-JN5"/>
-                            <constraint firstItem="DIe-2N-72H" firstAttribute="top" secondItem="K46-s0-d1g" secondAttribute="top" constant="20" id="UFd-8J-v2p"/>
-                            <constraint firstItem="DIe-2N-72H" firstAttribute="trailing" secondItem="IBS-Po-VUI" secondAttribute="trailing" id="UUa-HQ-Rbe"/>
-                            <constraint firstItem="tb0-B8-9L2" firstAttribute="leading" secondItem="DIe-2N-72H" secondAttribute="leading" id="VsU-DP-7da"/>
-                            <constraint firstItem="K46-s0-d1g" firstAttribute="leading" secondItem="DIe-2N-72H" secondAttribute="leading" id="WP7-mF-HQb"/>
-                            <constraint firstItem="DIe-2N-72H" firstAttribute="trailing" secondItem="aef-Yw-4qQ" secondAttribute="trailing" constant="33" id="WUj-WC-5kY"/>
-                            <constraint firstItem="IBS-Po-VUI" firstAttribute="top" secondItem="Rzo-yE-rHk" secondAttribute="top" id="XAx-yv-xn2"/>
-                            <constraint firstItem="IBS-Po-VUI" firstAttribute="bottom" secondItem="DIe-2N-72H" secondAttribute="bottom" id="ZKL-VY-uOL"/>
-                            <constraint firstItem="CVu-hf-obu" firstAttribute="trailing" secondItem="DIe-2N-72H" secondAttribute="trailing" id="fus-hi-gsY"/>
-                            <constraint firstItem="CVu-hf-obu" firstAttribute="bottom" secondItem="DIe-2N-72H" secondAttribute="bottom" id="gwq-6C-wJ2"/>
-                            <constraint firstItem="R0v-we-2ys" firstAttribute="leading" secondItem="DIe-2N-72H" secondAttribute="leading" id="hU5-yg-4ZW"/>
-                            <constraint firstItem="zQl-iP-UOz" firstAttribute="top" secondItem="Rzo-yE-rHk" secondAttribute="top" id="hc3-b8-OfW"/>
-                            <constraint firstItem="rd5-tV-VQT" firstAttribute="centerX" secondItem="Rzo-yE-rHk" secondAttribute="centerX" id="kar-kI-hdm"/>
-                            <constraint firstItem="tb0-B8-9L2" firstAttribute="top" secondItem="Rzo-yE-rHk" secondAttribute="top" id="mbe-S1-VaE"/>
-                            <constraint firstItem="zQl-iP-UOz" firstAttribute="leading" secondItem="DIe-2N-72H" secondAttribute="leading" id="rNC-f5-O69"/>
+                            <constraint firstItem="tZV-GC-tpC" firstAttribute="top" secondItem="Rd8-hJ-dpI" secondAttribute="bottom" constant="16.5" id="0xT-2P-fLh"/>
+                            <constraint firstItem="wdN-h3-Xyb" firstAttribute="centerY" secondItem="g4g-Tm-e2t" secondAttribute="centerY" id="5Zs-PK-M2g"/>
+                            <constraint firstItem="l1e-Jo-JPY" firstAttribute="trailing" secondItem="g4g-Tm-e2t" secondAttribute="trailing" id="7sl-Xm-dfB"/>
+                            <constraint firstItem="Rd8-hJ-dpI" firstAttribute="centerX" secondItem="g4g-Tm-e2t" secondAttribute="centerX" id="AOo-43-nGg"/>
+                            <constraint firstItem="471-Lx-afB" firstAttribute="leading" secondItem="g4g-Tm-e2t" secondAttribute="leading" id="BA4-6F-Gp4"/>
+                            <constraint firstItem="471-Lx-afB" firstAttribute="trailing" secondItem="g4g-Tm-e2t" secondAttribute="trailing" id="BOm-Lb-6sp"/>
+                            <constraint firstItem="tZV-GC-tpC" firstAttribute="width" secondItem="g4g-Tm-e2t" secondAttribute="width" multiplier="0.9" id="C38-fZ-4Mh"/>
+                            <constraint firstItem="YCe-1n-92q" firstAttribute="centerX" secondItem="g4g-Tm-e2t" secondAttribute="centerX" id="FLd-Vi-xMB"/>
+                            <constraint firstItem="471-Lx-afB" firstAttribute="bottom" secondItem="g4g-Tm-e2t" secondAttribute="bottom" id="JKQ-T4-7xE"/>
+                            <constraint firstItem="l1e-Jo-JPY" firstAttribute="bottom" secondItem="g4g-Tm-e2t" secondAttribute="bottom" id="Mfm-nC-86D"/>
+                            <constraint firstItem="YCe-1n-92q" firstAttribute="top" secondItem="djm-XX-HCo" secondAttribute="top" constant="14" id="OcG-ro-uOv"/>
+                            <constraint firstItem="Rd8-hJ-dpI" firstAttribute="width" secondItem="g4g-Tm-e2t" secondAttribute="width" multiplier="0.9" id="YAF-tK-yPp"/>
+                            <constraint firstItem="tZV-GC-tpC" firstAttribute="centerY" secondItem="g4g-Tm-e2t" secondAttribute="centerY" multiplier="0.65" id="ZSb-7d-0Hu"/>
+                            <constraint firstItem="471-Lx-afB" firstAttribute="height" secondItem="g4g-Tm-e2t" secondAttribute="height" multiplier="0.07" id="Zd9-Q4-LOD"/>
+                            <constraint firstItem="tZV-GC-tpC" firstAttribute="centerX" secondItem="g4g-Tm-e2t" secondAttribute="centerX" id="c2Z-Ml-kuZ"/>
+                            <constraint firstItem="wdN-h3-Xyb" firstAttribute="centerX" secondItem="g4g-Tm-e2t" secondAttribute="centerX" id="cVW-zX-Flv"/>
+                            <constraint firstItem="l1e-Jo-JPY" firstAttribute="top" secondItem="g4g-Tm-e2t" secondAttribute="top" id="dPN-5h-Tf1"/>
+                            <constraint firstItem="l1e-Jo-JPY" firstAttribute="leading" secondItem="g4g-Tm-e2t" secondAttribute="leading" id="qaJ-LG-EhE"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="DIe-2N-72H"/>
+                        <viewLayoutGuide key="safeArea" id="djm-XX-HCo"/>
                     </view>
                     <connections>
-                        <outlet property="dig1" destination="9pN-7q-yKt" id="cze-bD-Swp"/>
-                        <outlet property="dig2" destination="qhi-Fi-FZG" id="tzX-6Z-lSv"/>
-                        <outlet property="dig3" destination="F6n-Mq-qTX" id="izG-JE-Fdo"/>
-                        <outlet property="dig4" destination="ueR-rg-hkI" id="m16-BW-RvU"/>
-                        <outlet property="dig5" destination="IHa-oi-Xgj" id="gGU-z7-WDP"/>
-                        <outlet property="dig6" destination="5MH-6n-MX2" id="lZY-lB-Qo0"/>
+                        <outlet property="dig1" destination="kbj-cZ-s4T" id="6SN-Jb-slJ"/>
+                        <outlet property="dig2" destination="D92-z1-bnF" id="Aad-vf-HcU"/>
+                        <outlet property="dig3" destination="dvW-2G-Mhq" id="M2K-hP-36N"/>
+                        <outlet property="dig4" destination="M7G-Mt-yWi" id="kc4-IO-Cl0"/>
+                        <outlet property="dig5" destination="LEH-br-u9B" id="XLb-0w-HcG"/>
+                        <outlet property="dig6" destination="eHj-nY-L6v" id="aqw-w6-LbL"/>
+                        <outlet property="topInfoLabel" destination="Rd8-hJ-dpI" id="BAa-yZ-Twa"/>
                     </connections>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="dd8-i3-ZYy" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iN8-vg-7kD" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1831.8840579710147" y="132.58928571428572"/>
+            <point key="canvasLocation" x="1957.9710144927537" y="131.25"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="TvC-23-89f">
@@ -271,7 +245,7 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="7uo-cs-PDP" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="uyS-fB-tph">
-                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
+                        <rect key="frame" x="0.0" y="20" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -285,11 +259,8 @@
         </scene>
     </scenes>
     <resources>
-        <image name="background_pattern" width="360" height="640"/>
+        <image name="approve_back" width="360" height="640"/>
         <image name="fade_bottom" width="360" height="140"/>
-        <image name="fade_left" width="36" height="416"/>
-        <image name="fade_right" width="36" height="416"/>
-        <image name="fade_top" width="360" height="132"/>
-        <image name="perimeter_white_v2" width="360" height="416"/>
+        <image name="logo_small" width="83" height="24"/>
     </resources>
 </document>
